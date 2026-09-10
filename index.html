@@ -30,7 +30,6 @@
 
         .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
 
-        /* صندوق الإدخال الرئيسي */
         .input-card {
             background: var(--card-bg);
             padding: 2rem;
@@ -39,20 +38,41 @@
             margin-bottom: 2rem;
         }
 
-        .input-grid {
+        .range-section {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 15px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             margin-top: 1rem;
         }
 
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; }
+        .range-box {
+            background: #fdfbf7;
+            padding: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .range-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; }
         .form-group select, .form-group input {
             width: 100%;
-            padding: 0.8rem;
+            padding: 0.7rem;
             border: 1px solid #ccc;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
         }
 
@@ -71,7 +91,7 @@
         }
         .btn-generate:hover { background-color: #f3c623; }
 
-        /* منطقة التقرير الناتج (نفس هيكل التقرير) */
+        /* Report Output */
         .report-card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -91,19 +111,6 @@
             color: var(--primary-light);
             font-size: 1.3rem;
             margin: 1.5rem 0 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .quran-quote {
-            background-color: #fdfbf7;
-            border-right: 4px solid var(--accent);
-            padding: 1rem;
-            font-family: 'Amiri', serif;
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            border-radius: 4px;
         }
 
         .deep-meaning, .practical-wisdom {
@@ -115,16 +122,8 @@
         .deep-meaning { background-color: #f8f9fa; }
         .practical-wisdom { background-color: #e8f5e9; border-right: 4px solid var(--primary-light); }
 
-        .summary-box {
-            background-color: #fffdf0;
-            border: 1px dashed var(--accent);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-        }
-
-        @media (max-width: 600px) {
-            .input-grid { grid-template-columns: 1fr; }
+        @media (max-width: 650px) {
+            .range-section { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -132,70 +131,87 @@
 
     <header>
         <h1>📖 مُولّد التدبر القرآني</h1>
-        <p>أدخل وردك اليومي واحصل على تدبر معمّق وحكمة عملية لحياتك</p>
+        <p>حدد بداية ونهاية قراءتك اليومية حتى لو كانت عبر سور مختلفة</p>
     </header>
 
     <main class="container">
         
-        <!-- نموذج تحديد الورد -->
+        <!-- Input Form supporting multi-surah reading -->
         <section class="input-card">
-            <h3>ما هو الورد الذي قمت بقراءته اليوم؟</h3>
-            <div class="input-grid">
-                <div class="form-group">
-                    <label>اختر السورة</label>
-                    <select>
-                        <option>سورة المائدة</option>
-                        <option>سورة البقرة</option>
-                        <option>سورة آل عمران</option>
-                    </select>
+            <h3>ما هو نطاق وردك اليوم؟</h3>
+            
+            <div class="range-section">
+                <!-- Start Point -->
+                <div class="range-box">
+                    <h4>بداية الورد</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>السورة</label>
+                            <select>
+                                <option>2. البقرة</option>
+                                <option>3. آل عمران</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>من آية</label>
+                            <input type="number" value="280" min="1">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>من آية</label>
-                    <input type="number" value="15" min="1">
-                </div>
-                <div class="form-group">
-                    <label>إلى آية</label>
-                    <input type="number" value="26" min="1">
+
+                <!-- End Point -->
+                <div class="range-box">
+                    <h4>نهاية الورد</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>السورة</label>
+                            <select>
+                                <option>3. آل عمران</option>
+                                <option>2. البقرة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>إلى آية</label>
+                            <input type="number" value="10" min="1">
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <button class="btn-generate">توليد التقرير والتدبر ✨</button>
         </section>
 
-        <!-- النتيجة (تظهر بنفس الهيكل المطلوب) -->
+        <!-- Sample Generated Output -->
         <article class="report-card">
             <div class="report-header">
                 <h2>تدبر الورد اليومي</h2>
-                <p><strong>المائدة: الآيات ١٥ — 26</strong></p>
+                <p><strong>من: البقرة (٢٨٠) — إلى: آل عمران (١٠)</strong></p>
             </div>
 
-            <!-- المقطع الأول -->
             <div class="section-block">
-                <h3 class="block-title">🔹 المائدة ١٥-١٦ — القرآن نور بعد الظلمة</h3>
-                
-                <div class="quran-quote">
-                    "يا أهل الكتاب قد جاءكم رسولنا يبيّن لكم كثيرًا مما كنتم تخفون من الكتاب..."
-                </div>
-
+                <h3 class="block-title">🔹 ختام البقرة (٢٨٤-٢٨٦) — التكليف والتيسير</h3>
                 <div class="deep-meaning">
                     <strong>المعنى المعمّق:</strong>
-                    <p>ربنا بيخاطب أهل الكتاب: الرسول ﷺ جاي يفضح اللي خبيتوه من التوراة والإنجيل... لكن لاحظ اللطف: "ويعفو عن كثير" — مش جاي يفضح كل حاجة.</p>
+                    <p>خاتمة السورة تعيد ربط المؤمن بالطاعة المطلقة لله، وتبين أن رحمة الله تتجلى في رفع الحرج..."لا يكلف الله نفسًا إلا وسعها".</p>
                 </div>
-
                 <div class="practical-wisdom">
                     <strong>💡 الحكمة العملية:</strong>
-                    <p>لما ربنا قال "يهدي به الله من اتبع رضوانه" — يعني الهداية مش أوتوماتيكية. إنت لازم تبدأ تدور على رضا الله — وبعدين هو يفتحلك الطريق.</p>
+                    <p>لا تحمل نفسك فوق طاقتها بالهموم والوساوس؛ ما آتاك الله إياه من تكاليف هو في حدود قدرتك تمامًا.</p>
                 </div>
             </div>
 
             <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
 
-            <!-- ملخص الورد -->
-            <div class="summary-box">
-                <h3 style="color: var(--primary); margin-bottom: 10px;">📌 خلاصة الورد</h3>
-                <ul>
-                    <li><strong>لازم تتحرك عشان النصر يجيلك</strong> — قصة الأرض المقدسة.</li>
-                    <li><strong>الرحمة دايمًا بتلحق العدل</strong> — كل عقوبة يتبعها باب توبة.</li>
-                </ul>
+            <div class="section-block">
+                <h3 class="block-title">🔹 بداية آل عمران (١-١٠) — الثبات والتنزيل</h3>
+                <div class="deep-meaning">
+                    <strong>المعنى المعمّق:</strong>
+                    <p>الانتقال السلس من ختام البقرة إلى بداية آل عمران يرسخ قضية التوحيد وإثبات صدق القرآن ككتاب مصدق لما قبله.</p>
+                </div>
+                <div class="practical-wisdom">
+                    <strong>💡 الحكمة العملية:</strong>
+                    <p>عند دعاء الله، اسأله دائمًا ثبات القلب كما في الآية: "ربنا لا تزغ قلوبنا بعد إذ هديتنا".</p>
+                </div>
             </div>
         </article>
 
