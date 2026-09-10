@@ -67,6 +67,7 @@
       max-width: 850px;
     }
 
+    /* Top Bar & Theme Toggle */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -118,6 +119,7 @@
       font-size: 0.95rem;
     }
 
+    /* Range Filter Box */
     .search-panel {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -209,6 +211,7 @@
       transform: translateY(-1px);
     }
 
+    /* Cards */
     .results-container {
       display: flex;
       flex-direction: column;
@@ -268,7 +271,7 @@
       font-size: 1rem;
       margin-bottom: 20px;
       font-weight: 300;
-      white-space: pre-line; /* للحفاظ على التنسيق والأسطر */
+      white-space: pre-line;
     }
 
     .wisdom-box {
@@ -279,7 +282,7 @@
       color: var(--wisdom-text);
       font-size: 0.95rem;
       line-height: 1.7;
-      white-space: pre-line; /* للحفاظ على التنسيق والأسطر */
+      white-space: pre-line;
     }
 
     .wisdom-title {
@@ -341,7 +344,7 @@
           <label class="range-label">من (البداية):</label>
           <div class="range-group">
             <select id="startSurah" onchange="syncEndSurah()"></select>
-            <input type="number" id="startAyah" placeholder="آية رقم" min="1" value="1">
+            <input type="number" id="startAyah" placeholder="آية رقم" min="1">
           </div>
         </div>
 
@@ -357,7 +360,7 @@
 
       <!-- Keyword Filter -->
       <div>
-        <input type="text" id="searchInput" placeholder="بحث بكلمة في التدبر والمعنى..." onkeyup="debounceSearch()">
+        <input type="text" id="searchInput" placeholder="بحث بكلمة في التدبر والمعنى..." oninput="searchTadabbur()">
       </div>
 
       <div class="actions-grid">
@@ -375,54 +378,201 @@
   </div>
 
   <script>
-    // 1. قائمة سور القرآن الـ 114 كاملة مع عدد آيات كل سورة
+    const SUPABASE_URL = "https://imundmzbhyarqdwlzgnm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // قائمة السور الكاملة والسليمة 100%
     const SURAHS = [
-      { id: 1, name: "الفاتحة", ayahs: 7 }, { id: 2, name: "البقرة", ayahs: 286 }, { id: 3, name: "آل عمران", ayahs: 200 },
-      { id: 4, name: "النساء", ayahs: 176 }, { id: 5, name: "المائدة", ayahs: 120 }, { id: 6, name: "الأنعام", ayahs: 165 },
-      { id: 7, name: "الأعراف", ayahs: 206 }, { id: 8, name: "الأنفال", ayahs: 75 }, { id: 9, name: "التوبة", ayahs: 129 },
-      { id: 10, name: "يونس", ayahs: 109 }, { id: 11, name: "هود", ayahs: 123 }, { id: 12, name: "يوسف", ayahs: 111 },
-      { id: 13, name: "الرعد", ayahs: 43 }, { id: 14, name: "إبراهيم", ayahs: 52 }, { id: 15, name: "الحجر", ayahs: 99 },
-      { id: 16, name: "النحل", ayahs: 128 }, { id: 17, name: "الإسراء", ayahs: 111 }, { id: 18, name: "الكهف", ayahs: 110 },
-      { id: 19, name: "مريم", ayahs: 98 }, { id: 20, name: "طه", ayahs: 135 }, { id: 21, name: "الأنبياء", ayahs: 112 },
-      { id: 22, name: "الحج", ayahs: 78 }, { id: 23, name: "المؤمنون", ayahs: 118 }, { id: 24, name: "النور", ayahs: 64 },
-      { id: 25, name: "الفرقان", ayahs: 77 }, { id: 26, name: "الشعراء", ayahs: 227 }, { id: 27, name: "النمل", ayahs: 93 },
-      {التصميم ممتاز والـ Dashboard عندك مبني بأسلوب نظيف جداً!
+      { id: 1, name: "1. الفاتحة" }, { id: 2, name: "2. البقرة" }, { id: 3, name: "3. آل عمران" },
+      { id: 4, name: "4. النساء" }, { id: 5, name: "5. المائدة" }, { id: 6, name: "6. الأنعام" },
+      { id: 7, name: "7. الأعراف" }, { id: 8, name: "8. الأنفال" }, { id: 9, name: "9. التوبة" },
+      { id: 10, name: "10. يونس" }, { id: 11, name: "11. هود" }, { id: 12, name: "12. يوسف" },
+      { id: 13, name: "13. الرعد" }, { id: 14, name: "14. إبراهيم" }, { id: 15, name: "15. الحجر" },
+      { id: 16, name: "16. النحل" }, { id: 17, name: "17. الإسراء" }, { id: 18, name: "18. الكهف" },
+      { id: 19, name: "19. مريم" }, { id: 20, name: "20. طه" }, { id: 21, name: "21. الأنبياء" },
+      { id: 22, name: "22. الحج" }, { id: 23, name: "23. المؤمنون" }, { id: 24, name: "24. النور" },
+      { id: 25, name: "25. الفرقان" }, { id: 26, name: "26. الشعراء" }, { id: 27, name: "27. النمل" },
+      { id: 28, name: "28. القصص" }, { id: 29, name: "29. العنكبوت" }, { id: 30, name: "30. الروم" },
+      { id: 31, name: "31. لقمان" }, { id: 32, name: "32. السجدة" }, { id: 33, name: "33. الأحزاب" },
+      { id: 34, name: "34. سبأ" }, { id: 35, name: "35. فاطر" }, { id: 36, name: "36. يس" },
+      { id: 37, name: "37. الصافات" }, { id: 38, name: "38. ص" }, { id: 39, name: "39. الزمر" },
+      { id: 40, name: "40. غافر" }, { id: 41, name: "41. فصلت" }, { id: 42, name: "42. الشورى" },
+      { id: 43, name: "43. الزخرف" }, { id: 44, name: "44. الدخان" }, { id: 45, name: "45. الجاثية" },
+      { id: 46, name: "46. الأحقاف" }, { id: 47, name: "47. محمد" }, { id: 48, name: "48. الفتح" },
+      { id: 49, name: "49. الحجرات" }, { id: 50, name: "50. ق" }, { id: 51, name: "51. الذاريات" },
+      { id: 52, name: "52. الطور" }, { id: 53, name: "53. النجم" }, { id: 54, name: "54. القمر" },
+      { id: 55, name: "55. الرحمن" }, { id: 56, name: "56. الواقعة" }, { id: 57, name: "57. الحديد" },
+      { id: 58, name: "58. المجادلة" }, { id: 59, name: "59. الحشر" }, { id: 60, name: "60. الممتحنة" },
+      { id: 61, name: "61. الصف" }, { id: 62, name: "62. الجمعة" }, { id: 63, name: "63. المنافقون" },
+      { id: 64, name: "64. التغابن" }, { id: 65, name: "65. الطلاق" }, { id: 66, name: "66. التحريم" },
+      { id: 67, name: "67. الملك" }, { id: 68, name: "68. القلم" }, { id: 69, name: "69. الحاقة" },
+      { id: 70, name: "70. المعارج" }, { id: 71, name: "71. نوح" }, { id: 72, name: "72. الجن" },
+      { id: 73, name: "73. المزمل" }, { id: 74, name: "74. المدثر" }, { id: 75, name: "75. القيامة" },
+      { id: 76, name: "76. الإنسان" }, { id: 77, name: "77. المرسلات" }, { id: 78, name: "78. النبأ" },
+      { id: 79, name: "79. النازعات" }, { id: 80, name: "80. عبس" }, { id: 81, name: "81. التكوير" },
+      { id: 82, name: "82. الانفطار" }, { id: 83, name: "83. المطففين" }, { id: 84, name: "84. الانشقاق" },
+      { id: 85, name: "85. البروج" }, { id: 86, name: "86. الطارق" }, { id: 87, name: "87. الأعلى" },
+      { id: 88, name: "88. الغاشية" }, { id: 89, name: "89. الفجر" }, { id: 90, name: "90. البلد" },
+      { id: 91, name: "91. الشمس" }, { id: 92, name: "92. الليل" }, { id: 93, name: "93. الضحى" },
+      { id: 94, name: "94. الشرح" }, { id: 95, name: "95. التين" }, { id: 96, name: "96. العلق" },
+      { id: 97, name: "97. القدر" }, { id: 98, name: "98. البينة" }, { id: 99, name: "99. الزلزلة" },
+      { id: 100, name: "100. العاديات" }, { id: 101, name: "101. القارعة" }, { id: 102, name: "102. التكاثر" },
+      { id: 103, name: "103. العصر" }, { id: 104, name: "104. الهمزة" }, { id: 105, name: "105. الفيل" },
+      { id: 106, name: "106. قريش" }, { id: 107, name: "107. الماعون" }, { id: 108, name: "108. الكوثر" },
+      { id: 109, name: "109. الكافرون" }, { id: 110, name: "110. النصر" }, { id: 111, name: "111. المسد" },
+      { id: 112, name: "112. الإخلاص" }, { id: 113, name: "113. الفلق" }, { id: 114, name: "114. الناس" }
+    ];
 
-عشان نخلي البحث **Dynamic ومرن 100%** مع أي سورة أو نطاق آيات تفرضه في السلكتات بدون ما نعدل الكود يدوياً كل مرة، ونصلح ربطه بالـ Database، التعديل الأساسي المطلوبة في الكود هي:
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      populateSurahDropdowns();
+      searchTadabbur();
+    });
 
-1. **تحديث اسم الجدول:** الكود القديم في `index.html` كان يقرأ من `tadabbur_blocks` بينما جدولك في Supabase اسمه `quran_tadabbur`.
-2. **ملء القوائم (Select Options) ديناميكياً:** يجلب قائمة السور المتاحة في قاعدة البيانات بدلاً من كتابة الفاتحة والبقرة وآل عمران يدوياً.
-3. **تنسيق السطور والـ Formatting:** استخدام `white-space: pre-line` لقراءة السطور والفقرات في المعنى المعمق والحكمة العملية كما تم تخزينها بدون أن تتداخل النصوص.
+    function populateSurahDropdowns() {
+      const startSelect = document.getElementById('startSurah');
+      const endSelect = document.getElementById('endSurah');
+      
+      const optionsHtml = SURAHS.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      startSelect.innerHTML = optionsHtml;
+      endSelect.innerHTML = optionsHtml;
+    }
 
-إليك كود `index.html` كاملاً ومعدلاً وجاهزاً للرفع مباشرة على GitHub:
+    function syncEndSurah() {
+      const startVal = parseInt(document.getElementById('startSurah').value);
+      const endSelect = document.getElementById('endSurah');
+      if (parseInt(endSelect.value) < startVal) {
+        endSelect.value = startVal;
+      }
+    }
 
-```html
-<!DOCTYPE html>
-<html lang="ar" dir="rtl" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تَدَبُّر — منصة التدبر القرآني</title>
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-  <link href="[https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
-  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
-  
-  <style>
-    /* CSS Variables for Dynamic Theme Switching */
-    :root[data-theme="dark"] {
-      --bg-main: #0d1b1e;
-      --card-bg: rgba(22, 42, 45, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --primary-emerald: #10b981;
-      --emerald-glow: rgba(16, 185, 129, 0.15);
-      --accent-gold: #f59e0b;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --quran-text: #ecfdf5;
-      --input-bg: rgba(13, 27, 30, 0.85);
-      --wisdom-bg: rgba(245, 158, 11, 0.08);
-      --wisdom-border: rgba(245, 158, 11, 0.25);
-      --wisdom-
+    // Theme Switcher Logic
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const icon = document.getElementById('themeIcon');
+      const text = document.getElementById('themeText');
+      
+      if (theme === 'dark') {
+        icon.textContent = '☀️';
+        text.textContent = 'الوضع الفاتح';
+      } else {
+        icon.textContent = '🌙';
+        text.textContent = 'الوضع الداكن';
+      }
+    }
+
+    // Flexible Range Search Logic
+    async function searchTadabbur() {
+      const container = document.getElementById('content');
+      showSkeleton(container);
+
+      const startS = parseInt(document.getElementById('startSurah').value) || 1;
+      const startA = parseInt(document.getElementById('startAyah').value) || 1;
+      
+      const endS = parseInt(document.getElementById('endSurah').value) || startS;
+      const endA = parseInt(document.getElementById('endAyah').value) || 999;
+      
+      const searchKeyword = document.getElementById('searchInput').value.trim();
+
+      // القراءة من الجدول الصحيح: quran_tadabbur
+      let query = _supabase.from('quran_tadabbur').select('*');
+
+      // الفلترة بسلسلة السور المطلوبة
+      query = query.gte('surah_number', startS)
+                   .lte('surah_number', endS);
+
+      if (searchKeyword !== "") {
+        query = query.or(`deep_meaning.ilike.%${searchKeyword}%,section_title.ilike.%${searchKeyword}%`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>❌ حدث خطأ في جلب البيانات: ${error.message}</p>
+          </div>`;
+        return;
+      }
+
+      // فلترة الآيات داخل السور المختارة
+      const filtered = data.filter(item => {
+        const afterStart = (item.surah_number > startS) || (item.surah_number === startS && item.end_ayah >= startA);
+        const beforeEnd = (item.surah_number < endS) || (item.surah_number === endS && item.start_ayah <= endA);
+        return afterStart && beforeEnd;
+      });
+
+      renderResults(filtered);
+    }
+
+    async function fetchRandom() {
+      const container = document.getElementById('content');
+      showSkeleton(container);
+
+      const { data, error } = await _supabase.from('quran_tadabbur').select('*');
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>لا توجد مقاطع متوفرة حالياً.</p></div>`;
+        return;
+      }
+
+      const randomBlock = [data[Math.floor(Math.random() * data.length)]];
+      renderResults(randomBlock);
+    }
+
+    function renderResults(data) {
+      const container = document.getElementById('content');
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h3>لم نجد نتائج مطابقة لنطاق الآيات المحدد</h3>
+            <p style="margin-top: 8px;">جرب تعديل رقم الآية أو اختيار سورة أخرى.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = data.map(item => `
+        <div class="tadabbur-card">
+          <div class="card-header">
+            <div class="card-title">🔹 ${item.surah_name} (${item.start_ayah} - ${item.end_ayah}) — ${item.section_title}</div>
+          </div>
+          
+          <div class="quran-box">
+            <div class="quran-text">${item.quran_text}</div>
+          </div>
+
+          <div class="section-title">✨ الشرح والتأمل العميق</div>
+          <div class="meaning-text">${item.deep_meaning}</div>
+
+          <div class="wisdom-box">
+            <div class="wisdom-title">💡 العمل بالآية والتطبيق اليومي:</div>
+            <div>${item.practical_wisdom}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showSkeleton(container) {
+      container.innerHTML = `
+        <div class="tadabbur-card skeleton" style="height: 220px;"></div>
+      `;
+    }
+  </script>
+</body>
+</html>
