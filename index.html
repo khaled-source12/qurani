@@ -6,29 +6,111 @@
   <title>مولد التدبر القرآني</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: system-ui, sans-serif; background: #f4f6f8; color: #222; padding: 20px; max-width: 800px; margin: auto; }
-    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .quran { font-size: 1.3rem; color: #1b4332; background: #e8f5e9; padding: 15px; border-radius: 8px; line-height: 2; }
-    .title { color: #2d6a4f; margin-top: 0; }
-    .wisdom { background: #fff3cd; padding: 12px; border-right: 4px solid #ffc107; border-radius: 4px; margin-top: 15px; }
+    :root {
+      --primary: #1b4332;
+      --accent: #2d6a4f;
+      --bg: #f4f6f8;
+    }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: #222; padding: 20px; max-width: 850px; margin: auto; }
+    h1 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+    
+    /* Filter Bar Styles */
+    .filter-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin-bottom: 25px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: center; }
+    select, input, button { padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; outline: none; }
+    select, input { flex: 1; min-width: 130px; }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+    button:hover { background: var(--primary); }
+    .btn-secondary { background: #6c757d; }
+    .btn-secondary:hover { background: #495057; }
+
+    /* Results Card Styles */
+    .card { background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .quran { font-size: 1.3rem; color: var(--primary); background: #e8f5e9; padding: 16px; border-radius: 8px; line-height: 2.2; margin: 15px 0; }
+    .title { color: var(--accent); margin-top: 0; }
+    .meaning { line-height: 1.8; color: #333; }
+    .wisdom { background: #fff3cd; padding: 14px; border-right: 4px solid #ffc107; border-radius: 6px; margin-top: 15px; font-weight: 500; }
+    .status-msg { text-align: center; color: #666; font-size: 1.1rem; margin-top: 30px; }
   </style>
 </head>
 <body>
 
-  <h1>✨ مولد التدبر القرآني</h1>
-  <div id="content">جاري تحميل البيانات...</div>
+  <h1>✨ البحث في التدبر القرآني</h1>
+
+  <!-- Controls / Filter Section -->
+  <div class="filter-card">
+    <select id="surahSelect">
+      <option value="all">كل السور</option>
+      <option value="1">1. الفاتحة</option>
+      <option value="2">2. البقرة</option>
+      <!-- Add more Surahs as your database grows -->
+    </select>
+
+    <input type="number" id="ayahInput" placeholder="رقم الآية (اختياري)" min="1">
+
+    <button onclick="searchTadabbur()">بحث</button>
+    <button class="btn-secondary" onclick="fetchRandom()">تدبر عشوائي 🎲</button>
+  </div>
+
+  <!-- Content Container -->
+  <div id="content"></div>
 
   <script>
     const SUPABASE_URL = "https://imundmzbhyarqdwlzgnm.supabase.co";
     const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function loadTadabbur() {
-      const { data, error } = await _supabase.from('tadabbur_blocks').select('*');
+    // Initial Load: Fetch all available blocks
+    searchTadabbur();
+
+    async function searchTadabbur() {
       const container = document.getElementById('content');
-      
+      const surahVal = document.getElementById('surahSelect').value;
+      const ayahVal = parseInt(document.getElementById('ayahInput').value);
+
+      container.innerHTML = `<div class="status-msg">جاري البحث في قاعدة البيانات...</div>`;
+
+      let query = _supabase.from('tadabbur_blocks').select('*');
+
+      // Filter by Surah if selected
+      if (surahVal !== 'all') {
+        query = query.eq('start_surah', parseInt(surahVal));
+      }
+
+      // Filter by Ayah range if provided
+      if (!isNaN(ayahVal)) {
+        query = query.lte('start_ayah', ayahVal).gte('end_ayah', ayahVal);
+      }
+
+      const { data, error } = await query;
+
       if (error) {
-        container.innerHTML = "حدث خطأ في تحميل البيانات";
+        container.innerHTML = `<div class="status-msg">❌ حدث خطأ أثناء الاتصال بقاعدة البيانات.</div>`;
+        return;
+      }
+
+      renderResults(data);
+    }
+
+    async function fetchRandom() {
+      const container = document.getElementById('content');
+      container.innerHTML = `<div class="status-msg">جاري اختيار مقطع عشوائي...</div>`;
+
+      const { data, error } = await _supabase.from('tadabbur_blocks').select('*');
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div class="status-msg">لا توجد بيانات متاحة حالياً.</div>`;
+        return;
+      }
+
+      const randomBlock = [data[Math.floor(Math.random() * data.length)]];
+      renderResults(randomBlock);
+    }
+
+    function renderResults(data) {
+      const container = document.getElementById('content');
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="status-msg">لم يتم العثور على تدبر متاح لهذا النطاق حالياً.</div>`;
         return;
       }
 
@@ -37,13 +119,11 @@
           <h2 class="title">${item.title}</h2>
           <div class="quran">${item.quran_text}</div>
           <h3>💡 المعنى والتدبر:</h3>
-          <p>${item.deep_meaning}</p>
+          <p class="meaning">${item.deep_meaning}</p>
           <div class="wisdom">${item.practical_wisdom}</div>
         </div>
       `).join('');
     }
-
-    loadTadabbur();
   </script>
 </body>
 </html>
