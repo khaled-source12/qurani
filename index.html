@@ -1,221 +1,49 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مُولّد تدبر القرآن الكريم</title>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --primary: #1b4332;
-            --primary-light: #2d6a4f;
-            --accent: #d4af37;
-            --bg: #f4f6f8;
-            --card-bg: #ffffff;
-            --text-dark: #212529;
-            --border: #e9ecef;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background-color: var(--bg); color: var(--text-dark); line-height: 1.8; }
-
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            border-bottom: 4px solid var(--accent);
-        }
-
-        .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-
-        .input-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-
-        .range-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 1rem;
-        }
-
-        .range-box {
-            background: #fdfbf7;
-            padding: 1.2rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .range-box h4 {
-            color: var(--primary);
-            margin-bottom: 10px;
-            font-size: 1rem;
-            border-bottom: 2px solid var(--accent);
-            display: inline-block;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-        }
-
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 0.85rem; }
-        .form-group select, .form-group input {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        .btn-generate {
-            width: 100%;
-            margin-top: 1.5rem;
-            background-color: var(--accent);
-            color: var(--primary);
-            font-weight: 700;
-            font-size: 1.1rem;
-            border: none;
-            padding: 0.9rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-generate:hover { background-color: #f3c623; }
-
-        /* Report Output */
-        .report-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-
-        .report-header {
-            border-bottom: 2px solid var(--accent);
-            padding-bottom: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .report-header h2 { color: var(--primary); font-size: 1.8rem; }
-
-        .block-title {
-            color: var(--primary-light);
-            font-size: 1.3rem;
-            margin: 1.5rem 0 1rem;
-        }
-
-        .deep-meaning, .practical-wisdom {
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .deep-meaning { background-color: #f8f9fa; }
-        .practical-wisdom { background-color: #e8f5e9; border-right: 4px solid var(--primary-light); }
-
-        @media (max-width: 650px) {
-            .range-section { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مولد التدبر القرآني</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6f8; color: #222; padding: 20px; max-width: 800px; margin: auto; }
+    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .quran { font-size: 1.3rem; color: #1b4332; background: #e8f5e9; padding: 15px; border-radius: 8px; line-height: 2; }
+    .title { color: #2d6a4f; margin-top: 0; }
+    .wisdom { background: #fff3cd; padding: 12px; border-right: 4px solid #ffc107; border-radius: 4px; margin-top: 15px; }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>📖 مُولّد التدبر القرآني</h1>
-        <p>حدد بداية ونهاية قراءتك اليومية حتى لو كانت عبر سور مختلفة</p>
-    </header>
+  <h1>✨ مولد التدبر القرآني</h1>
+  <div id="content">جاري تحميل البيانات...</div>
 
-    <main class="container">
-        
-        <!-- Input Form supporting multi-surah reading -->
-        <section class="input-card">
-            <h3>ما هو نطاق وردك اليوم؟</h3>
-            
-            <div class="range-section">
-                <!-- Start Point -->
-                <div class="range-box">
-                    <h4>بداية الورد</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>السورة</label>
-                            <select>
-                                <option>2. البقرة</option>
-                                <option>3. آل عمران</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>من آية</label>
-                            <input type="number" value="280" min="1">
-                        </div>
-                    </div>
-                </div>
+  <script>
+    const SUPABASE_URL = "https://imundmzbhyarqdwlzgnm.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-                <!-- End Point -->
-                <div class="range-box">
-                    <h4>نهاية الورد</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>السورة</label>
-                            <select>
-                                <option>3. آل عمران</option>
-                                <option>2. البقرة</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>إلى آية</label>
-                            <input type="number" value="10" min="1">
-                        </div>
-                    </div>
-                </div>
-            </div>
+    async function loadTadabbur() {
+      const { data, error } = await _supabase.from('tadabbur_blocks').select('*');
+      const container = document.getElementById('content');
+      
+      if (error) {
+        container.innerHTML = "حدث خطأ في تحميل البيانات";
+        return;
+      }
 
-            <button class="btn-generate">توليد التقرير والتدبر ✨</button>
-        </section>
+      container.innerHTML = data.map(item => `
+        <div class="card">
+          <h2 class="title">${item.title}</h2>
+          <div class="quran">${item.quran_text}</div>
+          <h3>💡 المعنى والتدبر:</h3>
+          <p>${item.deep_meaning}</p>
+          <div class="wisdom">${item.practical_wisdom}</div>
+        </div>
+      `).join('');
+    }
 
-        <!-- Sample Generated Output -->
-        <article class="report-card">
-            <div class="report-header">
-                <h2>تدبر الورد اليومي</h2>
-                <p><strong>من: البقرة (٢٨٠) — إلى: آل عمران (١٠)</strong></p>
-            </div>
-
-            <div class="section-block">
-                <h3 class="block-title">🔹 ختام البقرة (٢٨٤-٢٨٦) — التكليف والتيسير</h3>
-                <div class="deep-meaning">
-                    <strong>المعنى المعمّق:</strong>
-                    <p>خاتمة السورة تعيد ربط المؤمن بالطاعة المطلقة لله، وتبين أن رحمة الله تتجلى في رفع الحرج..."لا يكلف الله نفسًا إلا وسعها".</p>
-                </div>
-                <div class="practical-wisdom">
-                    <strong>💡 الحكمة العملية:</strong>
-                    <p>لا تحمل نفسك فوق طاقتها بالهموم والوساوس؛ ما آتاك الله إياه من تكاليف هو في حدود قدرتك تمامًا.</p>
-                </div>
-            </div>
-
-            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
-
-            <div class="section-block">
-                <h3 class="block-title">🔹 بداية آل عمران (١-١٠) — الثبات والتنزيل</h3>
-                <div class="deep-meaning">
-                    <strong>المعنى المعمّق:</strong>
-                    <p>الانتقال السلس من ختام البقرة إلى بداية آل عمران يرسخ قضية التوحيد وإثبات صدق القرآن ككتاب مصدق لما قبله.</p>
-                </div>
-                <div class="practical-wisdom">
-                    <strong>💡 الحكمة العملية:</strong>
-                    <p>عند دعاء الله، اسأله دائمًا ثبات القلب كما في الآية: "ربنا لا تزغ قلوبنا بعد إذ هديتنا".</p>
-                </div>
-            </div>
-        </article>
-
-    </main>
-
+    loadTadabbur();
+  </script>
 </body>
 </html>
