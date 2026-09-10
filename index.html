@@ -1,20 +1,21 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تَدَبُّر — منصة التدبر القرآني</title>
   
-  <!-- الخطوط والأيقونات -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    :root {
+    /* CSS Variables for Dynamic Theme Switching */
+    :root[data-theme="dark"] {
       --bg-main: #0d1b1e;
-      --card-bg: rgba(22, 42, 45, 0.7);
+      --card-bg: rgba(22, 42, 45, 0.75);
       --card-border: rgba(255, 255, 255, 0.08);
       --primary-emerald: #10b981;
       --emerald-glow: rgba(16, 185, 129, 0.15);
@@ -22,17 +23,37 @@
       --text-main: #f3f4f6;
       --text-muted: #9ca3af;
       --quran-text: #ecfdf5;
+      --input-bg: rgba(13, 27, 30, 0.85);
+      --wisdom-bg: rgba(245, 158, 11, 0.08);
+      --wisdom-border: rgba(245, 158, 11, 0.25);
+      --wisdom-text: #fef3c7;
+      --quran-bg: rgba(16, 185, 129, 0.06);
+      --shadow-color: rgba(0, 0, 0, 0.3);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root[data-theme="light"] {
+      --bg-main: #f4f7f6;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.08);
+      --primary-emerald: #059669;
+      --emerald-glow: rgba(5, 150, 105, 0.12);
+      --accent-gold: #d97706;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --quran-text: #064e3b;
+      --input-bg: #f9fafb;
+      --wisdom-bg: #fffbe3;
+      --wisdom-border: #fcd34d;
+      --wisdom-text: #78350f;
+      --quran-bg: #ecfdf5;
+      --shadow-color: rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
 
     body {
       font-family: 'Readex Pro', sans-serif;
       background-color: var(--bg-main);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.05) 0px, transparent 50%);
-      background-attachment: fixed;
       color: var(--text-main);
       min-height: 100vh;
       padding: 30px 15px;
@@ -46,29 +67,50 @@
       max-width: 850px;
     }
 
-    /* Header Design */
-    header {
-      text-align: center;
-      margin-bottom: 35px;
+    /* Top Bar & Theme Toggle */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
     }
 
     .logo-tag {
       display: inline-block;
       padding: 6px 16px;
       background: var(--emerald-glow);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      border: 1px solid var(--primary-emerald);
       color: var(--primary-emerald);
       border-radius: 20px;
       font-size: 0.85rem;
       font-weight: 600;
-      margin-bottom: 12px;
-      letter-spacing: 0.5px;
+    }
+
+    .theme-toggle-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
     }
 
     h1 {
-      font-size: 2.4rem;
+      font-size: 2.3rem;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--text-main);
       margin-bottom: 8px;
     }
 
@@ -77,36 +119,49 @@
       font-size: 0.95rem;
     }
 
-    /* Search & Filter Bar */
+    /* Range Filter Box */
     .search-panel {
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
-      padding: 20px;
+      padding: 24px;
       border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 35px var(--shadow-color);
       margin-bottom: 30px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 18px;
+    }
+
+    .range-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary-emerald);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .range-group {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 10px;
     }
 
     .filter-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
     }
 
     select, input {
-      background: rgba(13, 27, 30, 0.8);
+      background: var(--input-bg);
       border: 1px solid var(--card-border);
       color: var(--text-main);
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-radius: 12px;
       font-size: 0.9rem;
       font-family: inherit;
       outline: none;
-      transition: all 0.2s ease;
+      width: 100%;
     }
 
     select:focus, input:focus {
@@ -117,6 +172,7 @@
     .actions-grid {
       display: flex;
       gap: 10px;
+      margin-top: 5px;
     }
 
     .btn {
@@ -132,31 +188,30 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.2s ease;
     }
 
     .btn-primary {
       background: var(--primary-emerald);
-      color: #0d1b1e;
+      color: #ffffff;
     }
 
     .btn-primary:hover {
-      background: #34d399;
+      opacity: 0.9;
       transform: translateY(-1px);
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
+      background: var(--input-bg);
       color: var(--text-main);
       border: 1px solid var(--card-border);
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary-emerald);
       transform: translateY(-1px);
     }
 
-    /* Results Cards */
+    /* Cards */
     .results-container {
       display: flex;
       flex-direction: column;
@@ -165,16 +220,10 @@
 
     .tadabbur-card {
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
       border: 1px solid var(--card-border);
       border-radius: 24px;
       padding: 28px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .tadabbur-card:hover {
-      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 10px 30px var(--shadow-color);
     }
 
     .card-header {
@@ -193,7 +242,7 @@
     }
 
     .quran-box {
-      background: rgba(16, 185, 129, 0.05);
+      background: var(--quran-bg);
       border-right: 4px solid var(--primary-emerald);
       padding: 22px;
       border-radius: 12px;
@@ -209,30 +258,27 @@
     }
 
     .section-title {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--text-muted);
       margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
     .meaning-text {
       line-height: 1.9;
-      color: #e5e7eb;
+      color: var(--text-main);
       font-size: 1rem;
       margin-bottom: 20px;
       font-weight: 300;
     }
 
     .wisdom-box {
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.2);
+      background: var(--wisdom-bg);
+      border: 1px solid var(--wisdom-border);
       padding: 16px;
       border-radius: 14px;
-      color: #fef3c7;
+      color: var(--wisdom-text);
       font-size: 0.95rem;
       line-height: 1.7;
     }
@@ -252,11 +298,10 @@
       color: var(--text-muted);
     }
 
-    /* Skeleton Loading */
     .skeleton {
       animation: pulse 1.5s infinite ease-in-out;
-      background: rgba(255,255,255,0.05);
-      border-radius: 8px;
+      background: var(--card-border);
+      border-radius: 16px;
     }
 
     @keyframes pulse {
@@ -276,23 +321,54 @@
 <body>
 
   <div class="container">
-    <header>
+    <div class="top-bar">
       <span class="logo-tag">تطبيق تدبر الذكي</span>
+      <button class="theme-toggle-btn" onclick="toggleTheme()">
+        <span id="themeIcon">☀️</span>
+        <span id="themeText">الوضع الفاتح</span>
+      </button>
+    </div>
+
+    <header>
       <h1>تَدَبُّر آيَاتِ القُرْآن</h1>
       <p class="subtitle">تأملات ومعانٍ عملية بالعامية المصرية الراقية</p>
     </header>
 
-    <!-- Search / Filter Area -->
+    <!-- Range Search Panel -->
     <div class="search-panel">
       <div class="filter-grid">
-        <select id="surahSelect" onchange="searchTadabbur()">
-          <option value="all">📖 كل السور المتاحة</option>
-          <option value="1">1. الفاتحة</option>
-          <option value="2">2. البقرة</option>
-        </select>
-        <input type="number" id="ayahInput" placeholder="رقم الآية" min="1" oninput="searchTadabbur()">
-        <input type="text" id="searchInput" placeholder="بحث بكلمة..." oninput="searchTadabbur()">
+        <!-- Start Point -->
+        <div>
+          <label class="range-label">من (البداية):</label>
+          <div class="range-group">
+            <select id="startSurah">
+              <option value="1">1. الفاتحة</option>
+              <option value="2">2. البقرة</option>
+              <option value="3">3. آل عمران</option>
+            </select>
+            <input type="number" id="startAyah" placeholder="آية رقم" min="1">
+          </div>
+        </div>
+
+        <!-- End Point -->
+        <div>
+          <label class="range-label">إلى (النهاية):</label>
+          <div class="range-group">
+            <select id="endSurah">
+              <option value="1">1. الفاتحة</option>
+              <option value="2">2. البقرة</option>
+              <option value="3">3. آل عمران</option>
+            </select>
+            <input type="number" id="endAyah" placeholder="آية رقم" min="1">
+          </div>
+        </div>
       </div>
+
+      <!-- Keyword Filter -->
+      <div>
+        <input type="text" id="searchInput" placeholder="بحث بكلمة في التدبر والمعنى..." oninput="searchTadabbur()">
+      </div>
+
       <div class="actions-grid">
         <button class="btn btn-primary" onclick="searchTadabbur()">
           🔍 عرض النتائج
@@ -303,7 +379,7 @@
       </div>
     </div>
 
-    <!-- Results Display Area -->
+    <!-- Results Area -->
     <div id="content" class="results-container"></div>
   </div>
 
@@ -312,26 +388,59 @@
     const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Dynamic initial load
-    document.addEventListener('DOMContentLoaded', searchTadabbur);
+    // Initialize Theme and Search on Load
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      searchTadabbur();
+    });
 
+    // Theme Switcher Logic
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const icon = document.getElementById('themeIcon');
+      const text = document.getElementById('themeText');
+      
+      if (theme === 'dark') {
+        icon.textContent = '☀️';
+        text.textContent = 'الوضع الفاتح';
+      } else {
+        icon.textContent = '🌙';
+        text.textContent = 'الوضع الداكن';
+      }
+    }
+
+    // Flexible Range Search Logic
     async function searchTadabbur() {
       const container = document.getElementById('content');
       showSkeleton(container);
 
-      const surahVal = document.getElementById('surahSelect').value;
-      const ayahVal = parseInt(document.getElementById('ayahInput').value);
+      const startS = parseInt(document.getElementById('startSurah').value);
+      const startA = parseInt(document.getElementById('startAyah').value) || 1;
+      
+      const endS = parseInt(document.getElementById('endSurah').value) || startS;
+      const endA = parseInt(document.getElementById('endAyah').value) || 999;
+      
       const searchKeyword = document.getElementById('searchInput').value.trim();
 
       let query = _supabase.from('tadabbur_blocks').select('*');
 
-      if (surahVal !== 'all') {
-        query = query.eq('start_surah', parseInt(surahVal));
-      }
-
-      if (!isNaN(ayahVal)) {
-        query = query.lte('start_ayah', ayahVal).gte('end_ayah', ayahVal);
-      }
+      // Filter blocks overlapping with the specified range
+      query = query.gte('end_surah', startS)
+                   .lte('start_surah', endS);
 
       if (searchKeyword !== "") {
         query = query.ilike('deep_meaning', `%${searchKeyword}%`);
@@ -347,7 +456,14 @@
         return;
       }
 
-      renderResults(data);
+      // Filter Ayah boundaries locally for cross-Surah flexibility
+      const filtered = data.filter(item => {
+        const afterStart = (item.start_surah > startS) || (item.start_surah === startS && item.end_ayah >= startA);
+        const beforeEnd = (item.end_surah < endS) || (item.end_surah === endS && item.start_ayah <= endA);
+        return afterStart && beforeEnd;
+      });
+
+      renderResults(filtered);
     }
 
     async function fetchRandom() {
@@ -357,10 +473,7 @@
       const { data, error } = await _supabase.from('tadabbur_blocks').select('*');
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>لا توجد مقاطع تدبر متوفرة حالياً.</p>
-          </div>`;
+        container.innerHTML = `<div class="empty-state"><p>لا توجد مقاطع متوفرة حالياً.</p></div>`;
         return;
       }
 
@@ -374,8 +487,8 @@
       if (!data || data.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <h3>لم نجد نتائج مطابقة</h3>
-            <p style="margin-top: 8px;">جرب تغيير السورة، رقم الآية، أو كلمة البحث.</p>
+            <h3>لم نجد نتائج مطابقة لنطاق الآيات المحدد</h3>
+            <p style="margin-top: 8px;">جرب تعديل رقم الآية أو اختيار سورة أخرى.</p>
           </div>`;
         return;
       }
@@ -403,8 +516,7 @@
 
     function showSkeleton(container) {
       container.innerHTML = `
-        <div class="tadabbur-card skeleton" style="height: 250px;"></div>
-        <div class="tadabbur-card skeleton" style="height: 250px;"></div>
+        <div class="tadabbur-card skeleton" style="height: 220px;"></div>
       `;
     }
   </script>
