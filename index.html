@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تدبر القرآن الكريم | وردك اليومي للتدبر والتفسير</title>
+    <!-- خط أميري للقرآن وخط كايرو للواجهة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1b4332;
+            --primary-light: #2d6a4f;
+            --accent: #d4af37;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-dark: #212529;
+            --text-muted: #6c757d;
+            --border-color: #e9ecef;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            line-height: 1.7;
+        }
+
+        /* الهيدر وقائمة التنقل */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent);
+        }
+
+        /* الجزء الرئيسي - Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .hero h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #d8f3dc;
+            max-width: 600px;
+            margin: 0 auto 1.5rem;
+        }
+
+        /* شريط البحث والتصفح */
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-container button {
+            background-color: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-container button:hover {
+            background-color: #f3c623;
+        }
+
+        /* المحتوى الرئيسي */
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* شريط اختيار اليوم/الورد */
+        .days-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .day-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-dark);
+            transition: all 0.3s;
+        }
+
+        .day-btn.active, .day-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* كارت الآية والتفسير */
+        .quran-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-top: 5px solid var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sura-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .ayah-number {
+            background-color: #e8f5e9;
+            color: var(--primary-light);
+            padding: 0.2rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* النص القرآني */
+        .quran-text {
+            font-family: 'Amiri', serif;
+            font-size: 1.8rem;
+            line-height: 2.2;
+            text-align: center;
+            color: #111;
+            margin-bottom: 2rem;
+            background-color: #fdfbf7;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px dashed #d4af37;
+        }
+
+        /* قسم التفسير والتدبر */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tafseer-box, .tadabbor-box {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .tafseer-box {
+            background-color: #f8f9fa;
+            border-right: 4px solid var(--primary-light);
+        }
+
+        .tadabbor-box {
+            background-color: #fffdf0;
+            border-right: 4px solid var(--accent);
+        }
+
+        /* أزرار التفاعل footer الكارت */
+        .card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* الفوتر */
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+        }
+
+        /* تجاوب مع الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .quran-text {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header>
+        <div class="logo">
+            <span>📖</span> تدبر القرآن
+        </div>
+        <nav>
+            <a href="#" class="active">الرئيسية</a>
+            <a href="#">جدول الأيام</a>
+            <a href="#">السور</a>
+            <a href="#">عن الموقع</a>
+        </nav>
+    </header>
+
+    <!-- الهيرو / البحث -->
+    <section class="hero">
+        <h1>جدول التدبر والتفسير اليومي</h1>
+        <p>ربط الآيات بالحياة اليومية مع تفسير ميسر ووقفات تدبرية عمليّة</p>
+        <div class="search-container">
+            <input type="text" placeholder="ابحث عن سورة، آية، أو موضوع (مثل: الصبر)...">
+            <button>بحث</button>
+        </div>
+    </section>
+
+    <!-- المحتوى -->
+    <main class="container">
+
+        <!-- شريط الأيام -->
+        <div class="days-nav">
+            <button class="day-btn active">اليوم 1 (سورة الفاتحة)</button>
+            <button class="day-btn">اليوم 2 (البقرة 1-16)</button>
+            <button class="day-btn">اليوم 3 (البقرة 17-29)</button>
+            <button class="day-btn">اليوم 4 (البقرة 30-48)</button>
+            <button class="day-btn">اليوم 5 (البقرة 49-61)</button>
+        </div>
+
+        <!-- كارت تفاعلي للآية والتفسير -->
+        <article class="quran-card">
+            <div class="card-header">
+                <span class="sura-title">سورة الفاتحة</span>
+                <span class="ayah-number">الآيات 1 - 7</span>
+            </div>
+
+            <!-- النص القرآني -->
+            <div class="quran-text">
+                بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ﴿١﴾ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ ﴿٢﴾ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ﴿٣﴾ مَٰلِكِ يَوْمِ ٱلدِّينِ ﴿٤﴾ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٥﴾ ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَإليك نموذج مبدئي جذاب وواضح لصفحة رئيسية لتطبيق/موقع تفسير وتدبر القرآن الكريم باستخدام **HTML و CSS** فقط (بدون مكتبات خارجية لتسهيل التعديل والتجربة). 
+
+يحتوي التصميم على:
+1. **هيدر (Header):** شريط علوي وشريط بحث.
+2. **بطاقة الورد اليومي (Daily Task):** لعرض ورد اليوم مع نسبة التقدم.
+3. **عرض الآية مع التفسير والتدبر:** تقسيم واضح ومريح للعين.
+4. **شريط اختيارات الخطة:** لتسهيل التنقل بين الأيام والسور.
+
+يمكنك نسخ الكود التالي وحفظه في ملف باسم `index.html` وفتحه على أي متصفح لرؤية النتيجة:
+
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تدبر - تفسير وتدبر القرآن الكريم</title>
+    <style>
+        :root {
+            --primary-color: #1b4d3e; /* أخضر قرآني هادئ */
+            --accent-color: #c5a059;  /* ذهبي */
+            --bg-color: #fcfbf7;      /* خلفية ورقية مريحة */
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --light-text: #666;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.8;
+            padding-bottom: 50px;
+        }
+
+        /* الهيدر */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            font-size: 2.2rem;
+        }
+
+        /* شريط البحث والتصفح */
+        .search-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-container input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .search-container button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* المحتوى الرئيسي */
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* بطاقة ورد اليوم */
+        .daily-card {
+            background: linear-gradient(135deg, var(--primary-color), #2a6f5a);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .daily-card h2 {
+            font-size: 1.4rem;
+            color: var(--accent-color);
+        }
+
+        .btn-action {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        /* قسم الآية والتفسير */
+        .quran-section {
+            background: var(--card-bg);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 25px;
+        }
+
+        .quran-text {
+            font-size: 1.8rem;
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f7f9f8;
+            border-radius: 8px;
+            border-right: 5px solid var(--accent-color);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .content-box {
+            margin-bottom: 20px;
+            color: #4a5568;
+            font-size: 1.05rem;
+        }
+
+        .tafseer-box {
+            background-color: #fffdf9;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--accent-color);
+        }
+
+        .tadabbor-box {
+            background-color: #f0f7f4;
+            padding: 15px;
+            border-radius: 8px;
+            border-right: 4px solid var(--primary-color);
+        }
+
+        /* أزرار التنقل */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background-color: white;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر -->
+    <header>
+        <h1>تَدَبُّر</h1>
+        <p>رحلتك اليومية للعيش مع آيات القرآن الكريم</p>
+    </header>
+
+    <!-- شريط البحث -->
+    <div class="search-container">
+        <input type="text" placeholder="ابحث عن سورة، آية، أو موضوع (مثال: الصبر)...">
+        <button>بحث</button>
+    </div>
+
+    <div class="container">
+        
+        <!-- ملخص الورد اليومي -->
+        <div class="daily-card">
+            <div>
+                <h2>ورد اليوم: اليوم الرابع (4)</h2>
+                <p>سورة البقرة - الآيات (153 - 157)</p>
+            </div>
+            <a href="#" class="btn-action">علامة الإكمال ✓</a>
+        </div>
+
+        <!-- عرض الآية والتفسير -->
+        <div class="quran-section">
+            
+            <!-- نص الآية -->
+            <div class="quran-text">
+                ﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا اسْتَعِينُوا بِالصَّبْرِ وَالصَّلَاةِ ۚ إِنَّ اللَّهَ مَعَ الصَّابِرِينَ ﴾
+            </div>
+
+            <!-- التفسير الميسر -->
+            <div class="content-box tafseer-box">
+                <h3 class="section-title">التفسير الميسر</h3>
+                <p>يا أيها الذين آمنوا يطلبون العون من الله في كل أمورهم بالصبر على الطاعات والمصائب، وبالصلاة التي تقربهم من ربهم. إن الله مع الصابرين بعونه وتوفيقه وتأييده.</p>
+            </div>
+
+            <!-- وقفة تدبرية -->
+            <div class="content-box tadabbor-box">
+                <h3 class="section-title">لمحة تدبرية وحياة بالآية</h3>
+                <p><strong>تأمل:</strong> قَرَنَ الله بين الصبر والصلاة؛ لأن الصلاة هي الزاد الروحي الذي يمنحك الطاقة على الصبر في مواجهة صعوبات الحياة اليومية.</p>
+                <p style="margin-top: 8px;"><strong>العمل بالآية اليوم:</strong> إذا واجهتك مشكلة أو ضيق اليوم، أقم صلاتك أولاً بتأمل، وسل الله العون قبل اتخاذ أي قرار.</p>
+            </div>
+
+            <!-- التنقل -->
+            <div class="navigation-buttons">
+                <button class="nav-btn">← الآية السابقة</button>
+                <button class="nav-btn">الآية التالية →</button>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
