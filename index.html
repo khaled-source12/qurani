@@ -67,7 +67,6 @@
       max-width: 850px;
     }
 
-    /* Top Bar & Theme Toggle */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -119,7 +118,6 @@
       font-size: 0.95rem;
     }
 
-    /* Range Filter Box */
     .search-panel {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
@@ -211,7 +209,6 @@
       transform: translateY(-1px);
     }
 
-    /* Cards */
     .results-container {
       display: flex;
       flex-direction: column;
@@ -271,6 +268,7 @@
       font-size: 1rem;
       margin-bottom: 20px;
       font-weight: 300;
+      white-space: pre-line; /* للحفاظ على التنسيق والأسطر */
     }
 
     .wisdom-box {
@@ -281,6 +279,7 @@
       color: var(--wisdom-text);
       font-size: 0.95rem;
       line-height: 1.7;
+      white-space: pre-line; /* للحفاظ على التنسيق والأسطر */
     }
 
     .wisdom-title {
@@ -341,12 +340,8 @@
         <div>
           <label class="range-label">من (البداية):</label>
           <div class="range-group">
-            <select id="startSurah">
-              <option value="1">1. الفاتحة</option>
-              <option value="2">2. البقرة</option>
-              <option value="3">3. آل عمران</option>
-            </select>
-            <input type="number" id="startAyah" placeholder="آية رقم" min="1">
+            <select id="startSurah" onchange="syncEndSurah()"></select>
+            <input type="number" id="startAyah" placeholder="آية رقم" min="1" value="1">
           </div>
         </div>
 
@@ -354,11 +349,7 @@
         <div>
           <label class="range-label">إلى (النهاية):</label>
           <div class="range-group">
-            <select id="endSurah">
-              <option value="1">1. الفاتحة</option>
-              <option value="2">2. البقرة</option>
-              <option value="3">3. آل عمران</option>
-            </select>
+            <select id="endSurah"></select>
             <input type="number" id="endAyah" placeholder="آية رقم" min="1">
           </div>
         </div>
@@ -366,7 +357,7 @@
 
       <!-- Keyword Filter -->
       <div>
-        <input type="text" id="searchInput" placeholder="بحث بكلمة في التدبر والمعنى..." oninput="searchTadabbur()">
+        <input type="text" id="searchInput" placeholder="بحث بكلمة في التدبر والمعنى..." onkeyup="debounceSearch()">
       </div>
 
       <div class="actions-grid">
@@ -384,141 +375,54 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://imundmzbhyarqdwlzgnm.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 1. قائمة سور القرآن الـ 114 كاملة مع عدد آيات كل سورة
+    const SURAHS = [
+      { id: 1, name: "الفاتحة", ayahs: 7 }, { id: 2, name: "البقرة", ayahs: 286 }, { id: 3, name: "آل عمران", ayahs: 200 },
+      { id: 4, name: "النساء", ayahs: 176 }, { id: 5, name: "المائدة", ayahs: 120 }, { id: 6, name: "الأنعام", ayahs: 165 },
+      { id: 7, name: "الأعراف", ayahs: 206 }, { id: 8, name: "الأنفال", ayahs: 75 }, { id: 9, name: "التوبة", ayahs: 129 },
+      { id: 10, name: "يونس", ayahs: 109 }, { id: 11, name: "هود", ayahs: 123 }, { id: 12, name: "يوسف", ayahs: 111 },
+      { id: 13, name: "الرعد", ayahs: 43 }, { id: 14, name: "إبراهيم", ayahs: 52 }, { id: 15, name: "الحجر", ayahs: 99 },
+      { id: 16, name: "النحل", ayahs: 128 }, { id: 17, name: "الإسراء", ayahs: 111 }, { id: 18, name: "الكهف", ayahs: 110 },
+      { id: 19, name: "مريم", ayahs: 98 }, { id: 20, name: "طه", ayahs: 135 }, { id: 21, name: "الأنبياء", ayahs: 112 },
+      { id: 22, name: "الحج", ayahs: 78 }, { id: 23, name: "المؤمنون", ayahs: 118 }, { id: 24, name: "النور", ayahs: 64 },
+      { id: 25, name: "الفرقان", ayahs: 77 }, { id: 26, name: "الشعراء", ayahs: 227 }, { id: 27, name: "النمل", ayahs: 93 },
+      {التصميم ممتاز والـ Dashboard عندك مبني بأسلوب نظيف جداً!
 
-    // Initialize Theme and Search on Load
-    document.addEventListener('DOMContentLoaded', () => {
-      initTheme();
-      searchTadabbur();
-    });
+عشان نخلي البحث **Dynamic ومرن 100%** مع أي سورة أو نطاق آيات تفرضه في السلكتات بدون ما نعدل الكود يدوياً كل مرة، ونصلح ربطه بالـ Database، التعديل الأساسي المطلوبة في الكود هي:
 
-    // Theme Switcher Logic
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeUI(savedTheme);
-    }
+1. **تحديث اسم الجدول:** الكود القديم في `index.html` كان يقرأ من `tadabbur_blocks` بينما جدولك في Supabase اسمه `quran_tadabbur`.
+2. **ملء القوائم (Select Options) ديناميكياً:** يجلب قائمة السور المتاحة في قاعدة البيانات بدلاً من كتابة الفاتحة والبقرة وآل عمران يدوياً.
+3. **تنسيق السطور والـ Formatting:** استخدام `white-space: pre-line` لقراءة السطور والفقرات في المعنى المعمق والحكمة العملية كما تم تخزينها بدون أن تتداخل النصوص.
 
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-      updateThemeUI(newTheme);
-    }
+إليك كود `index.html` كاملاً ومعدلاً وجاهزاً للرفع مباشرة على GitHub:
 
-    function updateThemeUI(theme) {
-      const icon = document.getElementById('themeIcon');
-      const text = document.getElementById('themeText');
-      
-      if (theme === 'dark') {
-        icon.textContent = '☀️';
-        text.textContent = 'الوضع الفاتح';
-      } else {
-        icon.textContent = '🌙';
-        text.textContent = 'الوضع الداكن';
-      }
-    }
-
-    // Flexible Range Search Logic
-    async function searchTadabbur() {
-      const container = document.getElementById('content');
-      showSkeleton(container);
-
-      const startS = parseInt(document.getElementById('startSurah').value);
-      const startA = parseInt(document.getElementById('startAyah').value) || 1;
-      
-      const endS = parseInt(document.getElementById('endSurah').value) || startS;
-      const endA = parseInt(document.getElementById('endAyah').value) || 999;
-      
-      const searchKeyword = document.getElementById('searchInput').value.trim();
-
-      let query = _supabase.from('tadabbur_blocks').select('*');
-
-      // Filter blocks overlapping with the specified range
-      query = query.gte('end_surah', startS)
-                   .lte('start_surah', endS);
-
-      if (searchKeyword !== "") {
-        query = query.ilike('deep_meaning', `%${searchKeyword}%`);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <p>❌ حدث خطأ في جلب البيانات، يرجى المحاولة مرة أخرى.</p>
-          </div>`;
-        return;
-      }
-
-      // Filter Ayah boundaries locally for cross-Surah flexibility
-      const filtered = data.filter(item => {
-        const afterStart = (item.start_surah > startS) || (item.start_surah === startS && item.end_ayah >= startA);
-        const beforeEnd = (item.end_surah < endS) || (item.end_surah === endS && item.start_ayah <= endA);
-        return afterStart && beforeEnd;
-      });
-
-      renderResults(filtered);
-    }
-
-    async function fetchRandom() {
-      const container = document.getElementById('content');
-      showSkeleton(container);
-
-      const { data, error } = await _supabase.from('tadabbur_blocks').select('*');
-
-      if (error || !data || data.length === 0) {
-        container.innerHTML = `<div class="empty-state"><p>لا توجد مقاطع متوفرة حالياً.</p></div>`;
-        return;
-      }
-
-      const randomBlock = [data[Math.floor(Math.random() * data.length)]];
-      renderResults(randomBlock);
-    }
-
-    function renderResults(data) {
-      const container = document.getElementById('content');
-
-      if (!data || data.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h3>لم نجد نتائج مطابقة لنطاق الآيات المحدد</h3>
-            <p style="margin-top: 8px;">جرب تعديل رقم الآية أو اختيار سورة أخرى.</p>
-          </div>`;
-        return;
-      }
-
-      container.innerHTML = data.map(item => `
-        <div class="tadabbur-card">
-          <div class="card-header">
-            <div class="card-title">${item.title}</div>
-          </div>
-          
-          <div class="quran-box">
-            <div class="quran-text">${item.quran_text}</div>
-          </div>
-
-          <div class="section-title">✨ الشرح والتأمل العميق</div>
-          <p class="meaning-text">${item.deep_meaning}</p>
-
-          <div class="wisdom-box">
-            <div class="wisdom-title">💡 العمل بالآية والتطبيق اليومي:</div>
-            <div>${item.practical_wisdom}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function showSkeleton(container) {
-      container.innerHTML = `
-        <div class="tadabbur-card skeleton" style="height: 220px;"></div>
-      `;
-    }
-  </script>
-</body>
-</html>
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تَدَبُّر — منصة التدبر القرآني</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+  <link href="[https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Readex+Pro:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
+  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+  
+  <style>
+    /* CSS Variables for Dynamic Theme Switching */
+    :root[data-theme="dark"] {
+      --bg-main: #0d1b1e;
+      --card-bg: rgba(22, 42, 45, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary-emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --accent-gold: #f59e0b;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --quran-text: #ecfdf5;
+      --input-bg: rgba(13, 27, 30, 0.85);
+      --wisdom-bg: rgba(245, 158, 11, 0.08);
+      --wisdom-border: rgba(245, 158, 11, 0.25);
+      --wisdom-
