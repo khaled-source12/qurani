@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 
 # ضع الـ API Key الخاص بك هنا
-client = genai.Client(api_key="YOUR_GEMINI_API_KEY")
+client = genai.Client(api_key="AQ.Ab8RN6JvzOpguq_b6oMZlS30NheOjZQUEePbDdq73t0F1kMSbg")
 
 # مثال لكتلة آيات: [start_surah, start_ayah, end_surah, end_ayah, start_global, end_global]
 blocks_to_generate = [
