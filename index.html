@@ -323,7 +323,7 @@ function renderCards(items,container){
         <div class="quran-box">
           <div class="quran-text">${esc(it.quran_text)}</div>
           <div class="quran-actions">
-            <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},this)">▶ استمع</button>
+            <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},${it.end_global_index},this)">▶ استمع</button>
           </div>
         </div>
         <div class="section-label">الشرح والتأمل</div>
@@ -348,14 +348,35 @@ function renderCards(items,container){
 function toggleCard(id){document.getElementById('card-'+id).classList.toggle('open')}
 
 // ─── Audio ───
-function playAudio(globalIdx,btn){
-  if(currentAudio){currentAudio.pause();document.querySelectorAll('.quran-action-btn.playing').forEach(b=>b.classList.remove('playing'))}
-  if(btn.classList.contains('playing')){btn.classList.remove('playing');btn.textContent='▶ استمع';currentAudio=null;return}
-  const url=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalIdx}.mp3`;
+let audioQueue=[], audioQueueIdx=0, activeAudioBtn=null;
+
+function playAudio(startIdx,endIdx,btn){
+  // Stop if already playing
+  if(currentAudio){currentAudio.pause();currentAudio=null}
+  if(activeAudioBtn){activeAudioBtn.classList.remove('playing');activeAudioBtn.textContent='▶ استمع'}
+  if(btn===activeAudioBtn&&btn.classList.contains('playing')){activeAudioBtn=null;return}
+
+  // Build queue of all ayahs in range
+  audioQueue=[];
+  for(let i=startIdx;i<=endIdx;i++) audioQueue.push(i);
+  audioQueueIdx=0;
+  activeAudioBtn=btn;
+  btn.classList.add('playing');
+  btn.textContent='⏸ إيقاف';
+  playNext();
+}
+
+function playNext(){
+  if(audioQueueIdx>=audioQueue.length){
+    if(activeAudioBtn){activeAudioBtn.classList.remove('playing');activeAudioBtn.textContent='▶ استمع'}
+    activeAudioBtn=null;currentAudio=null;return;
+  }
+  const idx=audioQueue[audioQueueIdx];
+  const url=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${idx}.mp3`;
   currentAudio=new Audio(url);
   currentAudio.play().catch(()=>{});
-  btn.classList.add('playing');btn.textContent='⏸ إيقاف';
-  currentAudio.onended=()=>{btn.classList.remove('playing');btn.textContent='▶ استمع';currentAudio=null}
+  currentAudio.onended=()=>{audioQueueIdx++;playNext()};
+  currentAudio.onerror=()=>{audioQueueIdx++;playNext()};
 }
 
 // ─── Bookmarks ───
@@ -419,7 +440,7 @@ function renderReader(){
     <div class="quran-box" style="margin-bottom:24px">
       <div class="quran-text">${esc(it.quran_text)}</div>
       <div class="quran-actions" style="margin-top:10px">
-        <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},this)">▶ استمع</button>
+        <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},${it.end_global_index},this)">▶ استمع</button>
       </div>
     </div>
     <div class="meaning" style="margin-bottom:24px">${esc(it.deep_meaning)}</div>
