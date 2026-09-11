@@ -269,13 +269,13 @@ async function loadDaily(){
   const offset=seed%count;
   const {data}=await db.from('tadabbur_blocks').select('*').range(offset,offset);
   if(!data||!data.length){hero.innerHTML='';return}
-  const it=data[0];
+  const it=data[0];dailyItem=it;
   hero.innerHTML=`
     <div class="hero-label">✦ تدبر اليوم</div>
     <div class="quran-box"><div class="quran-text">${esc(it.quran_text)}</div></div>
     <div class="hero-title">${esc(it.title)}</div>
     <div class="hero-excerpt">${esc(it.deep_meaning)}</div>
-    <button class="hero-cta" onclick='openReaderSingle(${JSON.stringify(it).replace(/'/g,"&#39;")})'>اقرأ التدبر كاملاً</button>
+    <button class="hero-cta" onclick="openDaily()">اقرأ التدبر كاملاً</button>
   `;
 }
 
@@ -336,7 +336,7 @@ function renderCards(items,container){
           <button class="action-pill ${bookmarks.includes(it.id)?'bookmarked':''}" onclick="toggleBookmark(${it.id},this)">
             ${bookmarks.includes(it.id)?'★ محفوظ':'☆ احفظ'}
           </button>
-          <button class="action-pill" onclick="shareBlock(${JSON.stringify(it).replace(/'/g,"&#39;")})">↗ شارك</button>
+          <button class="action-pill" onclick="shareItem(${i})">↗ شارك</button>
           <button class="action-pill" onclick="openReaderAt(${i})">◈ وضع القراءة</button>
         </div>
       </div>
@@ -396,13 +396,26 @@ async function renderBookmarks(){
 }
 
 // ─── Share ───
-async function shareBlock(it){
+let dailyItem=null;
+
+function shareItem(idx){doShare(allResults[idx])}
+function shareReader(){doShare(readerItems[readerIdx])}
+
+async function doShare(it){
+  if(!it)return;
   const text=`✦ ${it.title}\n\n﴿${it.quran_text}﴾\n\n${it.deep_meaning.substring(0,300)}...\n\n💡 ${it.practical_wisdom.substring(0,200)}...\n\n— تطبيق تدبّر`;
   if(navigator.share){try{await navigator.share({title:it.title,text})}catch(e){}}
-  else{await navigator.clipboard.writeText(text);alert('تم النسخ ✓')}
+  else{try{await navigator.clipboard.writeText(text);alert('تم النسخ ✓')}catch(e){prompt('انسخ النص:',text)}}
 }
 
 // ─── Reader Mode ───
+function openDaily(){
+  if(!dailyItem)return;
+  readerItems=[dailyItem];readerIdx=0;
+  document.getElementById('reader').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderReader();
+}
 function openReaderAt(idx){
   readerItems=allResults;readerIdx=idx;
   document.getElementById('reader').classList.add('open');
@@ -452,7 +465,7 @@ function renderReader(){
       <button class="action-pill ${bookmarks.includes(it.id)?'bookmarked':''}" onclick="toggleBookmark(${it.id},this)">
         ${bookmarks.includes(it.id)?'★ محفوظ':'☆ احفظ'}
       </button>
-      <button class="action-pill" onclick="shareBlock(${JSON.stringify(it).replace(/'/g,'&#39;')})">↗ شارك</button>
+      <button class="action-pill" onclick="shareReader()">↗ شارك</button>
     </div>
   `;
 }
