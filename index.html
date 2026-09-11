@@ -3,557 +3,437 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تَدَبُّر — منصة التدبر القرآني</title>
+  <title>تَدَبُّر</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root[data-theme="dark"] {
-      --bg-main: #0a1214;
-      --bg-surface: #111d21;
-      --card-bg: rgba(18, 36, 40, 0.8);
-      --card-border: rgba(255,255,255,0.06);
-      --emerald: #10b981;
-      --emerald-dim: rgba(16,185,129,0.12);
-      --gold: #f59e0b;
-      --gold-dim: rgba(245,158,11,0.08);
-      --gold-border: rgba(245,158,11,0.2);
-      --gold-text: #fef3c7;
-      --text: #f0f2f4;
-      --text-secondary: #8b949e;
-      --quran-text: #d1fae5;
-      --quran-bg: rgba(16,185,129,0.05);
-      --input-bg: rgba(10,18,20,0.9);
-      --shadow: rgba(0,0,0,0.4);
-      --error: #f87171;
+      --bg: #090f11; --surface: #111c20; --card: rgba(16,30,34,0.85);
+      --border: rgba(255,255,255,0.06); --border-hover: rgba(255,255,255,0.12);
+      --emerald: #10b981; --emerald-dim: rgba(16,185,129,0.1); --emerald-strong: rgba(16,185,129,0.2);
+      --gold: #f59e0b; --gold-dim: rgba(245,158,11,0.07); --gold-border: rgba(245,158,11,0.18); --gold-text: #fef3c7;
+      --text: #eef0f2; --text-2: #8b949e; --text-3: #5a6570;
+      --quran-color: #d1fae5; --quran-bg: rgba(16,185,129,0.04);
+      --input: rgba(8,14,16,0.9); --shadow: rgba(0,0,0,0.5);
+      --overlay: rgba(0,0,0,0.6);
     }
     :root[data-theme="light"] {
-      --bg-main: #f5f7f6;
-      --bg-surface: #edf0ef;
-      --card-bg: #ffffff;
-      --card-border: rgba(0,0,0,0.07);
-      --emerald: #059669;
-      --emerald-dim: rgba(5,150,105,0.1);
-      --gold: #b45309;
-      --gold-dim: #fef9e7;
-      --gold-border: #fcd34d;
-      --gold-text: #713f12;
-      --text: #1a2024;
-      --text-secondary: #5f6b73;
-      --quran-text: #064e3b;
-      --quran-bg: #f0fdf8;
-      --input-bg: #f8faf9;
-      --shadow: rgba(0,0,0,0.05);
-      --error: #dc2626;
+      --bg: #f6f8f7; --surface: #edf0ee; --card: #fff;
+      --border: rgba(0,0,0,0.06); --border-hover: rgba(0,0,0,0.12);
+      --emerald: #059669; --emerald-dim: rgba(5,150,105,0.08); --emerald-strong: rgba(5,150,105,0.15);
+      --gold: #b45309; --gold-dim: #fefce8; --gold-border: #fcd34d; --gold-text: #713f12;
+      --text: #171f24; --text-2: #5f6b73; --text-3: #9ca3af;
+      --quran-color: #064e3b; --quran-bg: #f0fdf4;
+      --input: #f8faf9; --shadow: rgba(0,0,0,0.04);
+      --overlay: rgba(255,255,255,0.7);
     }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Readex Pro',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Readex Pro', sans-serif;
-      background: var(--bg-main);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 28px 16px 60px;
-      display: flex;
-      justify-content: center;
-      transition: background 0.35s, color 0.35s;
-    }
-    .container { width: 100%; max-width: 820px; }
+    /* ── Utility ── */
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+    button{cursor:pointer;font-family:inherit;border:none;background:none;color:inherit}
 
-    /* Top bar */
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-    }
-    .logo {
-      padding: 5px 14px;
-      background: var(--emerald-dim);
-      border: 1px solid var(--emerald);
-      color: var(--emerald);
-      border-radius: 18px;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
-    .theme-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      padding: 7px 14px;
-      border-radius: 18px;
-      cursor: pointer;
-      font-family: inherit;
-      font-size: 0.82rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: border-color 0.25s;
-    }
-    .theme-btn:hover { border-color: var(--emerald); }
+    /* ── Top Bar ── */
+    .topbar{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;backdrop-filter:blur(12px)}
+    .topbar-right{display:flex;align-items:center;gap:8px}
+    .logo{font-weight:700;font-size:1.15rem;color:var(--emerald)}
+    .icon-btn{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;border:1px solid var(--border);transition:border-color .2s,background .2s}
+    .icon-btn:hover{border-color:var(--emerald);background:var(--emerald-dim)}
+    .icon-btn.active{background:var(--emerald-dim);border-color:var(--emerald)}
 
-    /* Header */
-    header { text-align: center; margin-bottom: 28px; }
-    h1 { font-size: 2.1rem; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: var(--text-secondary); font-size: 0.92rem; font-weight: 300; }
+    /* ── Layout ── */
+    .app{max-width:780px;margin:0 auto;padding:20px 16px 80px}
 
-    /* Range panel */
-    .panel {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      padding: 22px;
-      border-radius: 20px;
-      box-shadow: 0 8px 30px var(--shadow);
-      margin-bottom: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .range-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--emerald);
-      margin-bottom: 5px;
-      display: block;
-    }
-    .filter-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .range-row {
-      display: grid;
-      grid-template-columns: 1fr 90px;
-      gap: 8px;
-    }
-    select, input[type="number"] {
-      background: var(--input-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text);
-      padding: 11px 12px;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-family: inherit;
-      outline: none;
-      width: 100%;
-      transition: border-color 0.25s, box-shadow 0.25s;
-      -moz-appearance: textfield;
-    }
-    select:focus, input:focus {
-      border-color: var(--emerald);
-      box-shadow: 0 0 0 3px var(--emerald-dim);
-    }
-    input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
+    /* ── Tabs ── */
+    .tabs{display:flex;gap:4px;background:var(--surface);border-radius:12px;padding:4px;margin-bottom:22px}
+    .tab{flex:1;padding:10px;border-radius:9px;font-size:.85rem;font-weight:500;text-align:center;color:var(--text-2);transition:all .2s}
+    .tab.active{background:var(--card);color:var(--emerald);box-shadow:0 2px 8px var(--shadow)}
 
-    .actions {
-      display: flex;
-      gap: 10px;
-    }
-    .btn {
-      flex: 1;
-      padding: 11px 18px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 600;
-      font-size: 0.88rem;
-      font-family: inherit;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      transition: opacity 0.2s, transform 0.15s;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn-primary { background: var(--emerald); color: #fff; }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-ghost {
-      background: var(--input-bg);
-      color: var(--text);
-      border: 1px solid var(--card-border);
-    }
-    .btn-ghost:hover { border-color: var(--emerald); }
+    /* ── Daily Hero ── */
+    .hero{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 24px;margin-bottom:24px;box-shadow:0 4px 20px var(--shadow)}
+    .hero-label{font-size:.78rem;color:var(--emerald);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+    .hero .quran-box{margin-bottom:16px}
+    .hero-title{font-size:1.05rem;font-weight:600;color:var(--text);margin-bottom:10px}
+    .hero-excerpt{color:var(--text-2);font-size:.9rem;line-height:1.8;font-weight:300;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .hero-cta{margin-top:16px;padding:10px 20px;background:var(--emerald);color:#fff;border-radius:10px;font-weight:600;font-size:.85rem}
 
-    .error-msg {
-      color: var(--error);
-      font-size: 0.82rem;
-      font-weight: 500;
-      display: none;
-    }
-    .error-msg.show { display: block; }
+    /* ── Range Picker ── */
+    .picker{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:22px;box-shadow:0 2px 12px var(--shadow)}
+    .picker-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+    .picker label{font-size:.75rem;font-weight:600;color:var(--emerald);margin-bottom:4px;display:block}
+    .picker-row{display:grid;grid-template-columns:1fr 80px;gap:6px}
+    select,input[type="number"]{background:var(--input);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:8px;font-size:.85rem;font-family:inherit;outline:none;width:100%;transition:border-color .2s}
+    select:focus,input:focus{border-color:var(--emerald)}
+    .picker-btn{width:100%;padding:11px;background:var(--emerald);color:#fff;border-radius:10px;font-weight:600;font-size:.87rem}
+    .picker-error{color:#f87171;font-size:.78rem;margin-bottom:8px;display:none}
+    .picker-error.show{display:block}
 
-    /* Results */
-    .results { display: flex; flex-direction: column; gap: 22px; }
+    /* ── Card List ── */
+    .card-list{display:flex;flex-direction:column;gap:12px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 10px var(--shadow);transition:border-color .2s}
+    .card:hover{border-color:var(--border-hover)}
 
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 22px;
-      padding: 26px;
-      box-shadow: 0 6px 24px var(--shadow);
-    }
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--card-border);
-    }
-    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--emerald); }
+    .card-trigger{width:100%;padding:18px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;text-align:right}
+    .card-trigger-content{flex:1}
+    .card-trigger-title{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:4px}
+    .card-trigger-range{font-size:.75rem;color:var(--text-3)}
+    .card-chevron{color:var(--text-3);font-size:.8rem;margin-top:4px;transition:transform .2s}
+    .card.open .card-chevron{transform:rotate(90deg)}
 
-    .quran-box {
-      background: var(--quran-bg);
-      border-right: 3px solid var(--emerald);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    .quran-text {
-      font-family: 'Amiri', serif;
-      font-size: 1.55rem;
-      line-height: 2.4;
-      color: var(--quran-text);
-      text-align: justify;
-    }
+    .card-body{display:none;padding:0 20px 20px}
+    .card.open .card-body{display:block}
 
-    .section-label {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-    }
-    .meaning {
-      line-height: 1.95;
-      font-size: 0.98rem;
-      font-weight: 300;
-      margin-bottom: 18px;
-      white-space: pre-line;
-    }
+    /* ── Quran Box ── */
+    .quran-box{background:var(--quran-bg);border-right:3px solid var(--emerald);padding:18px;border-radius:10px}
+    .quran-text{font-family:'Amiri',serif;line-height:2.4;color:var(--quran-color);text-align:justify}
+    .quran-actions{display:flex;gap:6px;margin-top:10px}
+    .quran-action-btn{padding:5px 10px;border-radius:6px;font-size:.72rem;color:var(--text-2);border:1px solid var(--border);display:flex;align-items:center;gap:4px;transition:all .2s}
+    .quran-action-btn:hover{border-color:var(--emerald);color:var(--emerald)}
+    .quran-action-btn.playing{color:var(--emerald);border-color:var(--emerald);background:var(--emerald-dim)}
 
-    .wisdom {
-      background: var(--gold-dim);
-      border: 1px solid var(--gold-border);
-      padding: 16px;
-      border-radius: 12px;
-      color: var(--gold-text);
-      font-size: 0.92rem;
-      line-height: 1.75;
-    }
-    .wisdom-head { color: var(--gold); font-weight: 600; margin-bottom: 4px; }
+    /* ── Meaning & Wisdom ── */
+    .section-label{font-size:.72rem;font-weight:600;color:var(--text-3);margin:16px 0 6px}
+    .meaning{line-height:2;font-size:.92rem;font-weight:300;white-space:pre-line}
+    .wisdom{background:var(--gold-dim);border:1px solid var(--gold-border);padding:14px 16px;border-radius:12px;margin-top:16px;color:var(--gold-text);font-size:.88rem;line-height:1.8}
+    .wisdom-head{color:var(--gold);font-weight:600;font-size:.8rem;margin-bottom:4px}
 
-    .empty {
-      text-align: center;
-      padding: 50px 20px;
-      background: var(--card-bg);
-      border-radius: 20px;
-      border: 1px dashed var(--card-border);
-      color: var(--text-secondary);
-    }
-    .empty h3 { margin-bottom: 6px; font-weight: 500; }
+    /* ── Card Actions Bar ── */
+    .card-actions{display:flex;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+    .action-pill{padding:6px 12px;border-radius:8px;font-size:.75rem;color:var(--text-2);border:1px solid var(--border);display:flex;align-items:center;gap:4px;transition:all .2s}
+    .action-pill:hover{border-color:var(--emerald);color:var(--emerald)}
+    .action-pill.bookmarked{color:var(--gold);border-color:var(--gold-border);background:var(--gold-dim)}
 
-    .skeleton {
-      height: 200px;
-      background: var(--card-border);
-      border-radius: 18px;
-      animation: pulse 1.4s infinite ease-in-out;
-    }
-    @keyframes pulse {
-      0%,100% { opacity: 0.25; }
-      50% { opacity: 0.6; }
-    }
+    /* ── Reading Mode Overlay ── */
+    .reader-overlay{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto}
+    .reader-overlay.open{display:block}
+    .reader-bar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+    .reader-close{font-size:.85rem;color:var(--text-2);display:flex;align-items:center;gap:4px}
+    .reader-counter{font-size:.78rem;color:var(--text-3)}
+    .reader-body{max-width:680px;margin:0 auto;padding:24px 16px 100px}
+    .reader-nav{position:fixed;bottom:0;left:0;right:0;z-index:10;background:var(--bg);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;justify-content:center}
+    .reader-nav button{flex:1;max-width:200px;padding:12px;border-radius:10px;font-weight:600;font-size:.85rem}
+    .reader-prev{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+    .reader-next{background:var(--emerald);color:#fff}
+    .reader-nav button:disabled{opacity:.3;cursor:default}
 
-    .count-badge {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
+    /* ── Bookmarks Tab ── */
+    .empty-state{text-align:center;padding:50px 20px;color:var(--text-3)}
+    .empty-state h3{font-weight:500;margin-bottom:6px;color:var(--text-2)}
+    .empty-state p{font-size:.88rem}
 
-    @media (max-width: 640px) {
-      .filter-grid { grid-template-columns: 1fr; }
-      .actions { flex-direction: column; }
-      h1 { font-size: 1.7rem; }
-      .quran-text { font-size: 1.3rem; }
-      .card { padding: 20px; }
-      .range-row { grid-template-columns: 1fr 80px; }
+    /* ── Skeleton ── */
+    .skeleton{height:160px;background:var(--border);border-radius:14px;animation:pulse 1.4s infinite}
+    @keyframes pulse{0%,100%{opacity:.2}50%{opacity:.5}}
+
+    /* ── Font Size Classes ── */
+    .fs-small .quran-text{font-size:1.2rem}
+    .fs-small .meaning{font-size:.85rem}
+    .fs-normal .quran-text{font-size:1.5rem}
+    .fs-normal .meaning{font-size:.92rem}
+    .fs-large .quran-text{font-size:1.85rem}
+    .fs-large .meaning{font-size:1rem}
+
+    /* ── Mobile ── */
+    @media(max-width:640px){
+      .picker-grid{grid-template-columns:1fr}
+      .hero{padding:20px 16px}
+      .topbar{padding:8px 12px}
     }
   </style>
 </head>
-<body>
-<div class="container">
+<body class="fs-normal">
 
-  <div class="top-bar">
-    <span class="logo">تدبّر</span>
-    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️ الوضع الفاتح</button>
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <span class="logo">تَدَبُّر</span>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="cycleFontSize()" id="fontBtn" title="حجم الخط">ع</button>
+    <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل المظهر">☀️</button>
+  </div>
+</div>
+
+<div class="app">
+  <!-- ── Tabs ── -->
+  <div class="tabs">
+    <button class="tab active" data-tab="home" onclick="switchTab('home')">الرئيسية</button>
+    <button class="tab" data-tab="browse" onclick="switchTab('browse')">التصفح</button>
+    <button class="tab" data-tab="bookmarks" onclick="switchTab('bookmarks')">المحفوظات</button>
   </div>
 
-  <header>
-    <h1>تَدَبُّر آيَاتِ القُرْآن</h1>
-    <p class="subtitle">تأملات ومعانٍ عملية بالعامية المصرية</p>
-  </header>
-
-  <div class="panel">
-    <div class="filter-grid">
-      <div>
-        <label class="range-label">من:</label>
-        <div class="range-row">
-          <select id="startSurah" onchange="syncEnd()"></select>
-          <input type="number" id="startAyah" placeholder="آية" min="1" value="1">
-        </div>
-      </div>
-      <div>
-        <label class="range-label">إلى:</label>
-        <div class="range-row">
-          <select id="endSurah"></select>
-          <input type="number" id="endAyah" placeholder="آية" min="1">
-        </div>
-      </div>
-    </div>
-
-    <p class="error-msg" id="errorMsg"></p>
-
-    <div class="actions">
-      <button class="btn btn-primary" onclick="loadRange()">عرض التدبر</button>
-      <button class="btn btn-ghost" onclick="loadRandom()">🎲 مقطع عشوائي</button>
+  <!-- ── Home Tab ── -->
+  <div id="homeTab">
+    <div class="hero" id="dailyHero">
+      <div class="skeleton" style="height:180px"></div>
     </div>
   </div>
 
-  <div id="results" class="results"></div>
+  <!-- ── Browse Tab ── -->
+  <div id="browseTab" style="display:none">
+    <div class="picker">
+      <div class="picker-grid">
+        <div>
+          <label>من:</label>
+          <div class="picker-row">
+            <select id="startSurah" onchange="syncEnd()"></select>
+            <input type="number" id="startAyah" placeholder="آية" min="1" value="1">
+          </div>
+        </div>
+        <div>
+          <label>إلى:</label>
+          <div class="picker-row">
+            <select id="endSurah"></select>
+            <input type="number" id="endAyah" placeholder="آية" min="1">
+          </div>
+        </div>
+      </div>
+      <p class="picker-error" id="pickerError"></p>
+      <button class="picker-btn" onclick="loadRange()">عرض التدبرات</button>
+    </div>
+    <div id="browseResults" class="card-list"></div>
+  </div>
+
+  <!-- ── Bookmarks Tab ── -->
+  <div id="bookmarksTab" style="display:none">
+    <div id="bookmarkResults" class="card-list"></div>
+  </div>
+</div>
+
+<!-- ── Reading Mode ── -->
+<div class="reader-overlay" id="reader">
+  <div class="reader-bar">
+    <button class="reader-close" onclick="closeReader()">✕ رجوع</button>
+    <span class="reader-counter" id="readerCounter"></span>
+  </div>
+  <div class="reader-body" id="readerBody"></div>
+  <div class="reader-nav">
+    <button class="reader-prev" id="readerPrev" onclick="readerNav(-1)">السابق</button>
+    <button class="reader-next" id="readerNext" onclick="readerNav(1)">التالي</button>
+  </div>
 </div>
 
 <script>
-// ─── Surah Data ───
-const SURAHS = [
-  {n:1,name:"الفاتحة",ayahs:7},{n:2,name:"البقرة",ayahs:286},{n:3,name:"آل عمران",ayahs:200},
-  {n:4,name:"النساء",ayahs:176},{n:5,name:"المائدة",ayahs:120},{n:6,name:"الأنعام",ayahs:165},
-  {n:7,name:"الأعراف",ayahs:206},{n:8,name:"الأنفال",ayahs:75},{n:9,name:"التوبة",ayahs:129},
-  {n:10,name:"يونس",ayahs:109},{n:11,name:"هود",ayahs:123},{n:12,name:"يوسف",ayahs:111},
-  {n:13,name:"الرعد",ayahs:43},{n:14,name:"إبراهيم",ayahs:52},{n:15,name:"الحجر",ayahs:99},
-  {n:16,name:"النحل",ayahs:128},{n:17,name:"الإسراء",ayahs:111},{n:18,name:"الكهف",ayahs:110},
-  {n:19,name:"مريم",ayahs:98},{n:20,name:"طه",ayahs:135},{n:21,name:"الأنبياء",ayahs:112},
-  {n:22,name:"الحج",ayahs:78},{n:23,name:"المؤمنون",ayahs:118},{n:24,name:"النور",ayahs:64},
-  {n:25,name:"الفرقان",ayahs:77},{n:26,name:"الشعراء",ayahs:227},{n:27,name:"النمل",ayahs:93},
-  {n:28,name:"القصص",ayahs:88},{n:29,name:"العنكبوت",ayahs:69},{n:30,name:"الروم",ayahs:60},
-  {n:31,name:"لقمان",ayahs:34},{n:32,name:"السجدة",ayahs:30},{n:33,name:"الأحزاب",ayahs:73},
-  {n:34,name:"سبأ",ayahs:54},{n:35,name:"فاطر",ayahs:45},{n:36,name:"يس",ayahs:83},
-  {n:37,name:"الصافات",ayahs:182},{n:38,name:"ص",ayahs:88},{n:39,name:"الزمر",ayahs:75},
-  {n:40,name:"غافر",ayahs:85},{n:41,name:"فصلت",ayahs:54},{n:42,name:"الشورى",ayahs:53},
-  {n:43,name:"الزخرف",ayahs:89},{n:44,name:"الدخان",ayahs:59},{n:45,name:"الجاثية",ayahs:37},
-  {n:46,name:"الأحقاف",ayahs:35},{n:47,name:"محمد",ayahs:38},{n:48,name:"الفتح",ayahs:29},
-  {n:49,name:"الحجرات",ayahs:18},{n:50,name:"ق",ayahs:45},{n:51,name:"الذاريات",ayahs:60},
-  {n:52,name:"الطور",ayahs:49},{n:53,name:"النجم",ayahs:62},{n:54,name:"القمر",ayahs:55},
-  {n:55,name:"الرحمن",ayahs:78},{n:56,name:"الواقعة",ayahs:96},{n:57,name:"الحديد",ayahs:29},
-  {n:58,name:"المجادلة",ayahs:22},{n:59,name:"الحشر",ayahs:24},{n:60,name:"الممتحنة",ayahs:13},
-  {n:61,name:"الصف",ayahs:14},{n:62,name:"الجمعة",ayahs:11},{n:63,name:"المنافقون",ayahs:11},
-  {n:64,name:"التغابن",ayahs:18},{n:65,name:"الطلاق",ayahs:12},{n:66,name:"التحريم",ayahs:12},
-  {n:67,name:"الملك",ayahs:30},{n:68,name:"القلم",ayahs:52},{n:69,name:"الحاقة",ayahs:52},
-  {n:70,name:"المعارج",ayahs:44},{n:71,name:"نوح",ayahs:28},{n:72,name:"الجن",ayahs:28},
-  {n:73,name:"المزمل",ayahs:20},{n:74,name:"المدثر",ayahs:56},{n:75,name:"القيامة",ayahs:40},
-  {n:76,name:"الإنسان",ayahs:31},{n:77,name:"المرسلات",ayahs:50},{n:78,name:"النبأ",ayahs:40},
-  {n:79,name:"النازعات",ayahs:46},{n:80,name:"عبس",ayahs:42},{n:81,name:"التكوير",ayahs:29},
-  {n:82,name:"الانفطار",ayahs:19},{n:83,name:"المطففين",ayahs:36},{n:84,name:"الانشقاق",ayahs:25},
-  {n:85,name:"البروج",ayahs:22},{n:86,name:"الطارق",ayahs:17},{n:87,name:"الأعلى",ayahs:19},
-  {n:88,name:"الغاشية",ayahs:26},{n:89,name:"الفجر",ayahs:30},{n:90,name:"البلد",ayahs:20},
-  {n:91,name:"الشمس",ayahs:15},{n:92,name:"الليل",ayahs:21},{n:93,name:"الضحى",ayahs:11},
-  {n:94,name:"الشرح",ayahs:8},{n:95,name:"التين",ayahs:8},{n:96,name:"العلق",ayahs:19},
-  {n:97,name:"القدر",ayahs:5},{n:98,name:"البينة",ayahs:8},{n:99,name:"الزلزلة",ayahs:8},
-  {n:100,name:"العاديات",ayahs:11},{n:101,name:"القارعة",ayahs:11},{n:102,name:"التكاثر",ayahs:8},
-  {n:103,name:"العصر",ayahs:3},{n:104,name:"الهمزة",ayahs:9},{n:105,name:"الفيل",ayahs:5},
-  {n:106,name:"قريش",ayahs:4},{n:107,name:"الماعون",ayahs:7},{n:108,name:"الكوثر",ayahs:3},
-  {n:109,name:"الكافرون",ayahs:6},{n:110,name:"النصر",ayahs:3},{n:111,name:"المسد",ayahs:5},
-  {n:112,name:"الإخلاص",ayahs:4},{n:113,name:"الفلق",ayahs:5},{n:114,name:"الناس",ayahs:6}
-];
-
-function getSurah(n) { return SURAHS.find(s => s.n === n); }
+// ─── Data ───
+const SURAHS=[{n:1,name:"الفاتحة",a:7},{n:2,name:"البقرة",a:286},{n:3,name:"آل عمران",a:200},{n:4,name:"النساء",a:176},{n:5,name:"المائدة",a:120},{n:6,name:"الأنعام",a:165},{n:7,name:"الأعراف",a:206},{n:8,name:"الأنفال",a:75},{n:9,name:"التوبة",a:129},{n:10,name:"يونس",a:109},{n:11,name:"هود",a:123},{n:12,name:"يوسف",a:111},{n:13,name:"الرعد",a:43},{n:14,name:"إبراهيم",a:52},{n:15,name:"الحجر",a:99},{n:16,name:"النحل",a:128},{n:17,name:"الإسراء",a:111},{n:18,name:"الكهف",a:110},{n:19,name:"مريم",a:98},{n:20,name:"طه",a:135},{n:21,name:"الأنبياء",a:112},{n:22,name:"الحج",a:78},{n:23,name:"المؤمنون",a:118},{n:24,name:"النور",a:64},{n:25,name:"الفرقان",a:77},{n:26,name:"الشعراء",a:227},{n:27,name:"النمل",a:93},{n:28,name:"القصص",a:88},{n:29,name:"العنكبوت",a:69},{n:30,name:"الروم",a:60},{n:31,name:"لقمان",a:34},{n:32,name:"السجدة",a:30},{n:33,name:"الأحزاب",a:73},{n:34,name:"سبأ",a:54},{n:35,name:"فاطر",a:45},{n:36,name:"يس",a:83},{n:37,name:"الصافات",a:182},{n:38,name:"ص",a:88},{n:39,name:"الزمر",a:75},{n:40,name:"غافر",a:85},{n:41,name:"فصلت",a:54},{n:42,name:"الشورى",a:53},{n:43,name:"الزخرف",a:89},{n:44,name:"الدخان",a:59},{n:45,name:"الجاثية",a:37},{n:46,name:"الأحقاف",a:35},{n:47,name:"محمد",a:38},{n:48,name:"الفتح",a:29},{n:49,name:"الحجرات",a:18},{n:50,name:"ق",a:45},{n:51,name:"الذاريات",a:60},{n:52,name:"الطور",a:49},{n:53,name:"النجم",a:62},{n:54,name:"القمر",a:55},{n:55,name:"الرحمن",a:78},{n:56,name:"الواقعة",a:96},{n:57,name:"الحديد",a:29},{n:58,name:"المجادلة",a:22},{n:59,name:"الحشر",a:24},{n:60,name:"الممتحنة",a:13},{n:61,name:"الصف",a:14},{n:62,name:"الجمعة",a:11},{n:63,name:"المنافقون",a:11},{n:64,name:"التغابن",a:18},{n:65,name:"الطلاق",a:12},{n:66,name:"التحريم",a:12},{n:67,name:"الملك",a:30},{n:68,name:"القلم",a:52},{n:69,name:"الحاقة",a:52},{n:70,name:"المعارج",a:44},{n:71,name:"نوح",a:28},{n:72,name:"الجن",a:28},{n:73,name:"المزمل",a:20},{n:74,name:"المدثر",a:56},{n:75,name:"القيامة",a:40},{n:76,name:"الإنسان",a:31},{n:77,name:"المرسلات",a:50},{n:78,name:"النبأ",a:40},{n:79,name:"النازعات",a:46},{n:80,name:"عبس",a:42},{n:81,name:"التكوير",a:29},{n:82,name:"الانفطار",a:19},{n:83,name:"المطففين",a:36},{n:84,name:"الانشقاق",a:25},{n:85,name:"البروج",a:22},{n:86,name:"الطارق",a:17},{n:87,name:"الأعلى",a:19},{n:88,name:"الغاشية",a:26},{n:89,name:"الفجر",a:30},{n:90,name:"البلد",a:20},{n:91,name:"الشمس",a:15},{n:92,name:"الليل",a:21},{n:93,name:"الضحى",a:11},{n:94,name:"الشرح",a:8},{n:95,name:"التين",a:8},{n:96,name:"العلق",a:19},{n:97,name:"القدر",a:5},{n:98,name:"البينة",a:8},{n:99,name:"الزلزلة",a:8},{n:100,name:"العاديات",a:11},{n:101,name:"القارعة",a:11},{n:102,name:"التكاثر",a:8},{n:103,name:"العصر",a:3},{n:104,name:"الهمزة",a:9},{n:105,name:"الفيل",a:5},{n:106,name:"قريش",a:4},{n:107,name:"الماعون",a:7},{n:108,name:"الكوثر",a:3},{n:109,name:"الكافرون",a:6},{n:110,name:"النصر",a:3},{n:111,name:"المسد",a:5},{n:112,name:"الإخلاص",a:4},{n:113,name:"الفلق",a:5},{n:114,name:"الناس",a:6}];
+function getSurah(n){return SURAHS.find(s=>s.n===n)}
+function surahName(n){const s=getSurah(n);return s?s.name:''}
+function formatRange(it){if(!it.start_surah)return'';if(it.start_surah===it.end_surah){if(it.start_ayah===it.end_ayah)return surahName(it.start_surah)+' '+it.start_ayah;return surahName(it.start_surah)+' '+it.start_ayah+'-'+it.end_ayah}return surahName(it.start_surah)+' '+it.start_ayah+' → '+surahName(it.end_surah)+' '+it.end_ayah}
+function esc(s){if(!s)return'';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 // ─── Supabase ───
-const SUPABASE_URL = "https://imundmzbhyarqdwlzgnm.supabase.co";
-const SUPABASE_KEY = "sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs";
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db=supabase.createClient("https://imundmzbhyarqdwlzgnm.supabase.co","sb_publishable_b78kWQraA3NXVfOVe9UNmA_GpnPizjs");
+
+// ─── State ───
+let currentTab='home', allResults=[], readerItems=[], readerIdx=0, currentAudio=null;
+let bookmarks=JSON.parse(localStorage.getItem('tadabbur-bm')||'[]');
+const fontSizes=['fs-small','fs-normal','fs-large'];
+let fontIdx=1;
 
 // ─── Init ───
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  populateSelects();
-  loadRange();
+document.addEventListener('DOMContentLoaded',()=>{
+  initTheme();populateSelects();loadDaily();
 });
 
 // ─── Theme ───
-function initTheme() {
-  const t = localStorage.getItem('tadabbur-theme') || 'dark';
-  applyTheme(t);
-}
-function toggleTheme() {
-  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('tadabbur-theme', next);
-  applyTheme(next);
-}
-function applyTheme(t) {
-  document.documentElement.setAttribute('data-theme', t);
-  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️ الوضع الفاتح' : '🌙 الوضع الداكن';
+function initTheme(){const t=localStorage.getItem('tadabbur-theme')||'dark';applyTheme(t)}
+function toggleTheme(){const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';localStorage.setItem('tadabbur-theme',n);applyTheme(n)}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
+
+// ─── Font Size ───
+function cycleFontSize(){fontIdx=(fontIdx+1)%3;document.body.className=fontSizes[fontIdx]}
+
+// ─── Selects ───
+function populateSelects(){const h=SURAHS.map(s=>`<option value="${s.n}">${s.n}. ${s.name}</option>`).join('');document.getElementById('startSurah').innerHTML=h;document.getElementById('endSurah').innerHTML=h}
+function syncEnd(){const s=+document.getElementById('startSurah').value,e=+document.getElementById('endSurah').value;if(e<s)document.getElementById('endSurah').value=s}
+
+// ─── Tabs ───
+function switchTab(t){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===t));
+  document.getElementById('homeTab').style.display=t==='home'?'':'none';
+  document.getElementById('browseTab').style.display=t==='browse'?'':'none';
+  document.getElementById('bookmarksTab').style.display=t==='bookmarks'?'':'none';
+  if(t==='bookmarks')renderBookmarks();
 }
 
-// ─── Populate selects with 114 surahs ───
-function populateSelects() {
-  const html = SURAHS.map(s => `<option value="${s.n}">${s.n}. ${s.name}</option>`).join('');
-  document.getElementById('startSurah').innerHTML = html;
-  document.getElementById('endSurah').innerHTML = html;
-}
-
-// Keep end >= start when user changes start
-function syncEnd() {
-  const startN = parseInt(document.getElementById('startSurah').value);
-  const endN = parseInt(document.getElementById('endSurah').value);
-  if (endN < startN) document.getElementById('endSurah').value = startN;
+// ─── Daily ───
+async function loadDaily(){
+  const hero=document.getElementById('dailyHero');
+  // Use date as seed for consistent daily pick
+  const today=new Date().toISOString().slice(0,10);
+  const {count}=await db.from('tadabbur_blocks').select('*',{count:'exact',head:true});
+  if(!count){hero.innerHTML='<div class="empty-state"><h3>لا يوجد محتوى بعد</h3></div>';return}
+  const seed=[...today].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const offset=seed%count;
+  const {data}=await db.from('tadabbur_blocks').select('*').range(offset,offset);
+  if(!data||!data.length){hero.innerHTML='';return}
+  const it=data[0];
+  hero.innerHTML=`
+    <div class="hero-label">✦ تدبر اليوم</div>
+    <div class="quran-box"><div class="quran-text">${esc(it.quran_text)}</div></div>
+    <div class="hero-title">${esc(it.title)}</div>
+    <div class="hero-excerpt">${esc(it.deep_meaning)}</div>
+    <button class="hero-cta" onclick='openReaderSingle(${JSON.stringify(it).replace(/'/g,"&#39;")})'>اقرأ التدبر كاملاً</button>
+  `;
 }
 
 // ─── Validation ───
-function validate() {
-  const errEl = document.getElementById('errorMsg');
-  errEl.classList.remove('show');
-
-  const sS = parseInt(document.getElementById('startSurah').value);
-  const sA = parseInt(document.getElementById('startAyah').value) || 1;
-  const eS = parseInt(document.getElementById('endSurah').value);
-  const eA = parseInt(document.getElementById('endAyah').value) || getSurah(eS).ayahs;
-
-  // Range direction
-  if (eS < sS || (eS === sS && eA < sA)) {
-    errEl.textContent = 'نقطة النهاية لازم تكون بعد نقطة البداية';
-    errEl.classList.add('show');
-    return null;
-  }
-
-  // Ayah bounds
-  const startMax = getSurah(sS).ayahs;
-  const endMax = getSurah(eS).ayahs;
-  if (sA > startMax) {
-    errEl.textContent = `سورة ${getSurah(sS).name} فيها ${startMax} آية بس`;
-    errEl.classList.add('show');
-    return null;
-  }
-  if (eA > endMax) {
-    errEl.textContent = `سورة ${getSurah(eS).name} فيها ${endMax} آية بس`;
-    errEl.classList.add('show');
-    return null;
-  }
-
-  return { sS, sA, eS, eA };
+function validate(){
+  const err=document.getElementById('pickerError');err.classList.remove('show');
+  const sS=+document.getElementById('startSurah').value,sA=+document.getElementById('startAyah').value||1;
+  const eS=+document.getElementById('endSurah').value,eA=+document.getElementById('endAyah').value||getSurah(eS).a;
+  if(eS<sS||(eS===sS&&eA<sA)){err.textContent='النهاية لازم تكون بعد البداية';err.classList.add('show');return null}
+  const sm=getSurah(sS).a,em=getSurah(eS).a;
+  if(sA>sm){err.textContent=`${getSurah(sS).name} فيها ${sm} آية بس`;err.classList.add('show');return null}
+  if(eA>em){err.textContent=`${getSurah(eS).name} فيها ${em} آية بس`;err.classList.add('show');return null}
+  return{sS,sA,eS,eA}
 }
 
-// ─── Load range ───
-async function loadRange() {
-  const v = validate();
-  if (!v) return;
-
-  const container = document.getElementById('results');
-  container.innerHTML = '<div class="skeleton"></div>';
-
-  let query = db.from('tadabbur_blocks').select('*')
-    .gte('end_surah', v.sS)
-    .lte('start_surah', v.eS)
-    .order('start_surah', { ascending: true })
-    .order('start_ayah', { ascending: true });
-
-  const { data, error } = await query;
-
-  if (error) {
-    container.innerHTML = '<div class="empty"><h3>حصل خطأ في تحميل البيانات</h3><p>جرب تاني بعد شوية</p></div>';
-    return;
-  }
-
-  // Local filter for ayah boundaries
-  const filtered = (data || []).filter(item => {
-    const afterStart = item.start_surah > v.sS || (item.start_surah === v.sS && item.end_ayah >= v.sA);
-    const beforeEnd = item.end_surah < v.eS || (item.end_surah === v.eS && item.start_ayah <= v.eA);
-    return afterStart && beforeEnd;
+// ─── Browse ───
+async function loadRange(){
+  const v=validate();if(!v)return;
+  const c=document.getElementById('browseResults');
+  c.innerHTML='<div class="skeleton"></div>';
+  const {data,error}=await db.from('tadabbur_blocks').select('*').gte('end_surah',v.sS).lte('start_surah',v.eS).order('start_surah').order('start_ayah');
+  if(error){c.innerHTML='<div class="empty-state"><h3>حصل خطأ</h3></div>';return}
+  const filtered=(data||[]).filter(it=>{
+    const after=it.start_surah>v.sS||(it.start_surah===v.sS&&it.end_ayah>=v.sA);
+    const before=it.end_surah<v.eS||(it.end_surah===v.eS&&it.start_ayah<=v.eA);
+    return after&&before;
   });
-
-  render(filtered);
+  allResults=filtered;
+  renderCards(filtered,c);
 }
 
-// ─── Random: fetch just count then pick offset ───
-async function loadRandom() {
-  const container = document.getElementById('results');
-  container.innerHTML = '<div class="skeleton"></div>';
-  document.getElementById('errorMsg').classList.remove('show');
-
-  // Get total count first
-  const { count, error: cErr } = await db
-    .from('tadabbur_blocks')
-    .select('*', { count: 'exact', head: true });
-
-  if (cErr || !count) {
-    container.innerHTML = '<div class="empty"><h3>مفيش مقاطع متوفرة دلوقتي</h3></div>';
-    return;
-  }
-
-  const offset = Math.floor(Math.random() * count);
-  const { data, error } = await db
-    .from('tadabbur_blocks')
-    .select('*')
-    .range(offset, offset);
-
-  if (error || !data || data.length === 0) {
-    container.innerHTML = '<div class="empty"><h3>مفيش مقاطع متوفرة دلوقتي</h3></div>';
-    return;
-  }
-
-  render(data);
-}
-
-// ─── Render ───
-function render(items) {
-  const container = document.getElementById('results');
-
-  if (!items || items.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <h3>مفيش تدبرات في النطاق ده لسه</h3>
-        <p>جرب تغيّر السورة أو رقم الآية</p>
-      </div>`;
-    return;
-  }
-
-  container.innerHTML = items.map(item => `
-    <article class="card">
-      <div class="card-head">
-        <span class="card-title">${esc(item.title)}</span>
-        <span class="count-badge">${formatRange(item)}</span>
+// ─── Render Cards (collapsed) ───
+function renderCards(items,container){
+  if(!items.length){container.innerHTML='<div class="empty-state"><h3>مفيش تدبرات في النطاق ده</h3><p>جرب تغيّر الآيات</p></div>';return}
+  container.innerHTML=items.map((it,i)=>`
+    <div class="card" id="card-${it.id}">
+      <button class="card-trigger" onclick="toggleCard(${it.id})">
+        <div class="card-trigger-content">
+          <div class="card-trigger-title">${esc(it.title)}</div>
+          <div class="card-trigger-range">${formatRange(it)}</div>
+        </div>
+        <span class="card-chevron">◂</span>
+      </button>
+      <div class="card-body">
+        <div class="quran-box">
+          <div class="quran-text">${esc(it.quran_text)}</div>
+          <div class="quran-actions">
+            <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},this)">▶ استمع</button>
+          </div>
+        </div>
+        <div class="section-label">الشرح والتأمل</div>
+        <div class="meaning">${esc(it.deep_meaning)}</div>
+        <div class="wisdom">
+          <div class="wisdom-head">التطبيق العملي</div>
+          ${esc(it.practical_wisdom)}
+        </div>
+        <div class="card-actions">
+          <button class="action-pill ${bookmarks.includes(it.id)?'bookmarked':''}" onclick="toggleBookmark(${it.id},this)">
+            ${bookmarks.includes(it.id)?'★ محفوظ':'☆ احفظ'}
+          </button>
+          <button class="action-pill" onclick="shareBlock(${JSON.stringify(it).replace(/'/g,"&#39;")})">↗ شارك</button>
+          <button class="action-pill" onclick="openReaderAt(${i})">◈ وضع القراءة</button>
+        </div>
       </div>
-      <div class="quran-box">
-        <div class="quran-text">${esc(item.quran_text)}</div>
-      </div>
-      <p class="section-label">الشرح والتأمل</p>
-      <p class="meaning">${esc(item.deep_meaning)}</p>
-      <div class="wisdom">
-        <p class="wisdom-head">التطبيق العملي</p>
-        <div>${esc(item.practical_wisdom)}</div>
-      </div>
-    </article>
+    </div>
   `).join('');
 }
 
-// ─── Helpers ───
-function esc(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
+// ─── Toggle Card ───
+function toggleCard(id){document.getElementById('card-'+id).classList.toggle('open')}
+
+// ─── Audio ───
+function playAudio(globalIdx,btn){
+  if(currentAudio){currentAudio.pause();document.querySelectorAll('.quran-action-btn.playing').forEach(b=>b.classList.remove('playing'))}
+  if(btn.classList.contains('playing')){btn.classList.remove('playing');btn.textContent='▶ استمع';currentAudio=null;return}
+  const url=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${globalIdx}.mp3`;
+  currentAudio=new Audio(url);
+  currentAudio.play().catch(()=>{});
+  btn.classList.add('playing');btn.textContent='⏸ إيقاف';
+  currentAudio.onended=()=>{btn.classList.remove('playing');btn.textContent='▶ استمع';currentAudio=null}
 }
 
-function formatRange(item) {
-  if (!item.start_surah) return '';
-  const s = getSurah(item.start_surah);
-  const e = getSurah(item.end_surah);
-  if (!s) return '';
-  if (item.start_surah === item.end_surah) {
-    if (item.start_ayah === item.end_ayah) return `${s.name} ${item.start_ayah}`;
-    return `${s.name} ${item.start_ayah}-${item.end_ayah}`;
-  }
-  return `${s.name} ${item.start_ayah} → ${e ? e.name : ''} ${item.end_ayah}`;
+// ─── Bookmarks ───
+function toggleBookmark(id,btn){
+  const idx=bookmarks.indexOf(id);
+  if(idx>-1){bookmarks.splice(idx,1);btn.classList.remove('bookmarked');btn.textContent='☆ احفظ'}
+  else{bookmarks.push(id);btn.classList.add('bookmarked');btn.textContent='★ محفوظ'}
+  localStorage.setItem('tadabbur-bm',JSON.stringify(bookmarks));
+}
+async function renderBookmarks(){
+  const c=document.getElementById('bookmarkResults');
+  if(!bookmarks.length){c.innerHTML='<div class="empty-state"><h3>مفيش محفوظات لسه</h3><p>اضغط "احفظ" على أي تدبر عشان يظهر هنا</p></div>';return}
+  c.innerHTML='<div class="skeleton"></div>';
+  const {data}=await db.from('tadabbur_blocks').select('*').in('id',bookmarks);
+  allResults=data||[];
+  renderCards(allResults,c);
+}
+
+// ─── Share ───
+async function shareBlock(it){
+  const text=`✦ ${it.title}\n\n﴿${it.quran_text}﴾\n\n${it.deep_meaning.substring(0,300)}...\n\n💡 ${it.practical_wisdom.substring(0,200)}...\n\n— تطبيق تدبّر`;
+  if(navigator.share){try{await navigator.share({title:it.title,text})}catch(e){}}
+  else{await navigator.clipboard.writeText(text);alert('تم النسخ ✓')}
+}
+
+// ─── Reader Mode ───
+function openReaderAt(idx){
+  readerItems=allResults;readerIdx=idx;
+  document.getElementById('reader').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderReader();
+}
+function openReaderSingle(it){
+  readerItems=[it];readerIdx=0;
+  document.getElementById('reader').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderReader();
+}
+function closeReader(){
+  document.getElementById('reader').classList.remove('open');
+  document.body.style.overflow='';
+  if(currentAudio){currentAudio.pause();currentAudio=null}
+}
+function readerNav(dir){
+  readerIdx+=dir;
+  if(readerIdx<0)readerIdx=0;
+  if(readerIdx>=readerItems.length)readerIdx=readerItems.length-1;
+  renderReader();
+  document.getElementById('reader').scrollTop=0;
+}
+function renderReader(){
+  const it=readerItems[readerIdx];
+  document.getElementById('readerCounter').textContent=`${readerIdx+1} / ${readerItems.length}`;
+  document.getElementById('readerPrev').disabled=readerIdx===0;
+  document.getElementById('readerNext').disabled=readerIdx===readerItems.length-1;
+  document.getElementById('readerBody').innerHTML=`
+    <div style="margin-bottom:20px">
+      <h2 style="font-size:1.15rem;font-weight:600;color:var(--emerald);margin-bottom:4px">${esc(it.title)}</h2>
+      <span style="font-size:.78rem;color:var(--text-3)">${formatRange(it)}</span>
+    </div>
+    <div class="quran-box" style="margin-bottom:24px">
+      <div class="quran-text">${esc(it.quran_text)}</div>
+      <div class="quran-actions" style="margin-top:10px">
+        <button class="quran-action-btn" onclick="playAudio(${it.start_global_index},this)">▶ استمع</button>
+      </div>
+    </div>
+    <div class="meaning" style="margin-bottom:24px">${esc(it.deep_meaning)}</div>
+    <div class="wisdom">
+      <div class="wisdom-head">التطبيق العملي</div>
+      ${esc(it.practical_wisdom)}
+    </div>
+    <div class="card-actions" style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="action-pill ${bookmarks.includes(it.id)?'bookmarked':''}" onclick="toggleBookmark(${it.id},this)">
+        ${bookmarks.includes(it.id)?'★ محفوظ':'☆ احفظ'}
+      </button>
+      <button class="action-pill" onclick="shareBlock(${JSON.stringify(it).replace(/'/g,'&#39;')})">↗ شارك</button>
+    </div>
+  `;
 }
 </script>
 </body>
