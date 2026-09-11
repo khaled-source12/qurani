@@ -265,6 +265,10 @@ function applyTheme(t){
   document.getElementById('themeBtn').textContent=icons[t]||'☀️';
   themeIdx=themes.indexOf(t);
 }
+  function initTheme(){
+  const t=localStorage.getItem('tadabbur-theme')||'dark';
+  applyTheme(t);
+}
 
 // ─── Font Size ───
 function cycleFontSize(){
