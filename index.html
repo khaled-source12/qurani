@@ -9,6 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+
+    .read-time{font-size:.7rem;color:var(--text-3);display:flex;align-items:center;gap:3px;margin-top:3px}
+    
     :root[data-theme="dark"] {
       --bg: #090f11; --surface: #111c20; --card: rgba(16,30,34,0.85);
       --border: rgba(255,255,255,0.06); --border-hover: rgba(255,255,255,0.12);
@@ -29,6 +32,17 @@
       --input: #f8faf9; --shadow: rgba(0,0,0,0.04);
       --overlay: rgba(255,255,255,0.7);
     }
+
+    :root[data-theme="sepia"] {
+  --bg: #1a1510; --surface: #231e17; --card: rgba(35,30,23,0.9);
+  --border: rgba(255,220,160,0.08); --border-hover: rgba(255,220,160,0.15);
+  --emerald: #d4a053; --emerald-dim: rgba(212,160,83,0.1); --emerald-strong: rgba(212,160,83,0.2);
+  --gold: #e8a849; --gold-dim: rgba(232,168,73,0.08); --gold-border: rgba(232,168,73,0.18); --gold-text: #fef3c7;
+  --text: #e8dcc8; --text-2: #a89880; --text-3: #6d5f4e;
+  --quran-color: #f0e0c0; --quran-bg: rgba(212,160,83,0.05);
+  --input: rgba(18,14,10,0.9); --shadow: rgba(0,0,0,0.5);
+  --overlay: rgba(0,0,0,0.6);
+}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Readex Pro',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
 
@@ -150,7 +164,7 @@
 <div class="topbar">
   <span class="logo">تَدَبُّر</span>
   <div class="topbar-right">
-    <button class="icon-btn" onclick="cycleFontSize()" id="fontBtn" title="حجم الخط">ع</button>
+    <button class="icon-btn" onclick="cycleFontSize()" id="fontBtn" title="حجم الخط">   <span id="fontLabel" style="font-weight:700;line-height:1">عـ<sup style="font-size:.55em">+</sup></span> </button>
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل المظهر">☀️</button>
   </div>
 </div>
@@ -237,13 +251,31 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 // ─── Theme ───
-function initTheme(){const t=localStorage.getItem('tadabbur-theme')||'dark';applyTheme(t)}
-function toggleTheme(){const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';localStorage.setItem('tadabbur-theme',n);applyTheme(n)}
-function applyTheme(t){document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
+const themes=['dark','light','sepia'];
+let themeIdx=0;
+function toggleTheme(){
+  themeIdx=(themeIdx+1)%3;
+  const t=themes[themeIdx];
+  localStorage.setItem('tadabbur-theme',t);
+  applyTheme(t);
+}
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const icons={dark:'☀️',light:'🌙',sepia:'📖'};
+  document.getElementById('themeBtn').textContent=icons[t]||'☀️';
+  themeIdx=themes.indexOf(t);
+}
 
 // ─── Font Size ───
-function cycleFontSize(){fontIdx=(fontIdx+1)%3;document.body.className=fontSizes[fontIdx]}
-
+function cycleFontSize(){
+  fontIdx=(fontIdx+1)%3;
+  document.body.className=fontSizes[fontIdx];
+  const labels=['صغير','متوسط','كبير'];
+  const sizes=['0.75em','0.85em','1em'];
+  const el=document.getElementById('fontLabel');
+  el.style.fontSize=sizes[fontIdx];
+  document.getElementById('fontBtn').title='حجم الخط: '+labels[fontIdx];
+}
 // ─── Selects ───
 function populateSelects(){const h=SURAHS.map(s=>`<option value="${s.n}">${s.n}. ${s.name}</option>`).join('');document.getElementById('startSurah').innerHTML=h;document.getElementById('endSurah').innerHTML=h}
 function syncEnd(){const s=+document.getElementById('startSurah').value,e=+document.getElementById('endSurah').value;if(e<s)document.getElementById('endSurah').value=s}
@@ -307,6 +339,12 @@ async function loadRange(){
   renderCards(filtered,c);
 }
 
+  function readTime(text){
+  if(!text)return 1;
+  const words=text.split(/\s+/).length;
+  return Math.max(1,Math.round(words/150));
+}
+
 // ─── Render Cards (collapsed) ───
 function renderCards(items,container){
   if(!items.length){container.innerHTML='<div class="empty-state"><h3>مفيش تدبرات في النطاق ده</h3><p>جرب تغيّر الآيات</p></div>';return}
@@ -315,7 +353,7 @@ function renderCards(items,container){
       <button class="card-trigger" onclick="toggleCard(${it.id})">
         <div class="card-trigger-content">
           <div class="card-trigger-title">${esc(it.title)}</div>
-          <div class="card-trigger-range">${formatRange(it)}</div>
+          <div class="card-trigger-range">${formatRange(it)}</div> <div class="read-time">◷ ${readTime(it.deep_meaning+' '+it.practical_wisdom)} دقائق قراءة</div>
         </div>
         <span class="card-chevron">◂</span>
       </button>
@@ -448,7 +486,7 @@ function renderReader(){
   document.getElementById('readerBody').innerHTML=`
     <div style="margin-bottom:20px">
       <h2 style="font-size:1.15rem;font-weight:600;color:var(--emerald);margin-bottom:4px">${esc(it.title)}</h2>
-      <span style="font-size:.78rem;color:var(--text-3)">${formatRange(it)}</span>
+      <span style="font-size:.78rem;color:var(--text-3)">${formatRange(it)} · ◷ ${readTime(it.deep_meaning+' '+it.practical_wisdom)} د</span>
     </div>
     <div class="quran-box" style="margin-bottom:24px">
       <div class="quran-text">${esc(it.quran_text)}</div>
@@ -469,6 +507,20 @@ function renderReader(){
     </div>
   `;
 }
+// ─── Swipe Gestures ───
+let touchStartX=0, touchEndX=0;
+document.getElementById('reader').addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX},{passive:true});
+document.getElementById('reader').addEventListener('touchend',e=>{
+  touchEndX=e.changedTouches[0].screenX;
+  const diff=touchStartX-touchEndX;
+  if(Math.abs(diff)>80){
+    if(diff>0) readerNav(1);  // swipe left = next
+    else readerNav(-1);       // swipe right = prev
+  }
+},{passive:true});
+
+  
+  
 </script>
 </body>
 </html>
